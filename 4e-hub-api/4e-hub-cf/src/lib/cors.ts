@@ -2,7 +2,7 @@ const ALLOWED_ORIGINS = new Set([
 	'http://localhost:8081',
 	'http://localhost:8787',
 	'https://admin-web-gamma-lime.vercel.app',
-	'https://4e-hub-cf.4d-admin.workers.dev',
+	'https://4e-hub-cf.4e-hub.workers.dev',
 ]);
 
 function corsHeaders(origin: string | null): Record<string, string> {
