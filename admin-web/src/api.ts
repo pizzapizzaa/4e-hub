@@ -70,6 +70,10 @@ function devOrFetch<T>(mock: T, fetcher: () => Promise<T>): Promise<T> {
 export const getSchools  = (): Promise<School[]>  => devOrFetch(DEV_SCHOOLS,  () => apiFetch('/api/admin/schools'));
 export const getSchool   = (id: string): Promise<School> =>
   devOrFetch(DEV_SCHOOLS.find(s => s.id === id) ?? DEV_SCHOOLS[0], () => apiFetch(`/api/admin/schools/${id}`));
+export const createSchool = (data: { name: string; address: string; districtId: string }): Promise<School> =>
+  IS_MOCK
+    ? Promise.reject(new Error('Not available in mock mode'))
+    : apiFetch('/api/admin/schools', { method: 'POST', body: JSON.stringify(data) });
 
 // ── Programs ──────────────────────────────────────────────────────────────────
 export const getPrograms = (): Promise<LearningProgram[]> => devOrFetch(DEV_PROGRAMS, () => apiFetch('/api/admin/programs'));

@@ -1,7 +1,7 @@
 import { handleGetLearners } from './admin/learners.ts';
 import { handleGetMaterials, handleUpdateMaterials } from './admin/materials.ts';
 import { handleGetPrograms } from './admin/programs.ts';
-import { handleGetSchool, handleGetSchools } from './admin/schools.ts';
+import { handleGetSchool, handleGetSchools, handleCreateSchool } from './admin/schools.ts';
 import { handleGetSyncStatus, handleTriggerSync } from './admin/sync.ts';
 import { handleGetTeachers } from './admin/teachers.ts';
 import { handleLogin } from './auth/login.ts';
@@ -41,6 +41,7 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 
 		// Admin routes
 		if (method === 'GET'  && pathname === '/api/admin/schools')           return handleGetSchools(request, env);
+		if (method === 'POST' && pathname === '/api/admin/schools')           return handleCreateSchool(request, env);
 		if (method === 'GET'  && pathname.startsWith('/api/admin/schools/'))  return handleGetSchool(request, env, pathname.slice('/api/admin/schools/'.length));
 		if (method === 'GET'  && pathname === '/api/admin/programs')          return handleGetPrograms(request, env);
 		if (method === 'GET'  && pathname === '/api/admin/teachers')          return handleGetTeachers(request, env);

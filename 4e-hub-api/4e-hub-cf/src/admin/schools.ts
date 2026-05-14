@@ -3,6 +3,7 @@ import { getTursoClient } from '../lib/db.ts';
 import { requireAuth } from '../lib/require-auth.ts';
 
 const ADMIN_ROLES = new Set(['super_admin', 'district_admin', 'school_admin']);
+const CREATE_ROLES = new Set(['super_admin', 'district_admin']);
 
 export async function handleGetSchools(request: Request, env: Env): Promise<Response> {
 	const auth = await requireAuth(request, env);
@@ -66,4 +67,45 @@ export async function handleGetSchool(request: Request, env: Env, id: string): P
 		isActive:     r.is_active === 1,
 		createdAt:    r.created_at,
 	}, 200, request);
+}
+
+export async function handleCreateSchool(request: Request, env: Env): Promise<Response> {
+	const auth = await requireAuth(request, env);
+	if (auth instanceof Response) return auth;
+	if (!CREATE_ROLES.has(auth.role)) return err('Forbidden', 403, request);
+
+	let body: { name?: unknown; address?: unknown; districtId?: unknown };
+	try {
+		body = (await request.json()) as typeof body;
+	} catch {
+		return err('Invalid JSON body', 400, request);
+	}
+
+	const name       = typeof body.name === 'string'       ? body.name.trim()       : null;
+	const address    = typeof body.address === 'string'    ? body.address.trim()    : '';
+	const districtId = typeof body.districtId === 'string' ? body.districtId.trim() : null;
+
+	if (!name)       return err('name is required', 400, request);
+	if (!districtId) return err('districtId is required', 400, request);
+
+	const id        = crypto.randomUUID();
+	const createdAt = new Date().toISOString();
+
+	const db = getTursoClient(env);
+	await db.execute(
+		'INSERT INTO schools (id, district_id, name, address, admin_ids, teacher_count, student_count, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+		[id, districtId, name, address, '[]', 0, 0, 1, createdAt],
+	);
+
+	return json({
+		id,
+		districtId,
+		name,
+		address,
+		adminIds:     [],
+		teacherCount: 0,
+		studentCount: 0,
+		isActive:     true,
+		createdAt,
+	}, 201, request);
 }
