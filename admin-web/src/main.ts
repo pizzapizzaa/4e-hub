@@ -142,6 +142,7 @@ function addLogoutButton(): void {
       } catch { /* best effort — clear session regardless */ }
     }
     clearAuth();
+    window.location.replace('#login');
     window.location.reload();
   });
   topbarUser.appendChild(btn);
