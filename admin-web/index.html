@@ -189,20 +189,13 @@
     .btn:hover { opacity: .95; }
     .btn-green { background: var(--green); color: #fff; }
 
-    /* Primary / orange 3D button (face + bottom shadow + press animation) */
+    /* Primary / orange 3D button (face + layered bottom shadows + press animation) */
     .btn-orange {
       background: #FFA12B; color: #fff;
       padding: 10px 20px; border-radius: 8px; font-weight: 800;
-      box-shadow: inset 0 1px 0 #FFE5C4, 0 10px 0 #915100;
+      box-shadow: inset 0 1px 0 #FFE5C4, 0 6px 0 #915100, 0 10px 0 #2B1800;
       border: none;
       -webkit-user-select: none; user-select: none;
-    }
-
-    .btn-orange::after {
-      content: "";
-      position: absolute;
-      left: -4px; right: -4px; bottom: -15px;
-      height: 100%; background: #2B1800; border-radius: 6px; z-index: -1;
     }
 
     .btn-orange:active,

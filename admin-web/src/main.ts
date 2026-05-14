@@ -3,6 +3,7 @@ import {
     IS_MOCK,
     attemptTokenRefresh,
     clearAuth,
+    getRefreshToken,
     getToken,
     isTokenExpired,
     setExpiresAt,
@@ -129,7 +130,6 @@ function addLogoutButton(): void {
   btn.addEventListener('click', async () => {
     const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
     if (apiUrl) {
-      const { getRefreshToken } = await import('./api.js');
       try {
         await fetch(`${apiUrl}/api/auth/logout`, {
           method: 'POST',
