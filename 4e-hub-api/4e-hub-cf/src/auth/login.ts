@@ -94,6 +94,15 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
 
 	// Issue access token
 	const now = Math.floor(Date.now() / 1000);
+	// Try to find a teacher record for this user (may not exist)
+	let teacherId: string | undefined = undefined;
+	try {
+	  const t = await db.execute('SELECT id FROM teachers WHERE user_id = ? LIMIT 1', [user.id as string]);
+	  if (t.rows && t.rows[0]) teacherId = t.rows[0].id as string;
+	} catch {
+	  // ignore — teacher lookup is best-effort
+	}
+
 	const payload: JwtPayload = {
 		sub: user.id as string,
 		email: user.email as string,
@@ -103,6 +112,7 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
 		tenantId: user.tenant_id as string,
 		firstName: user.first_name as string,
 		lastName: user.last_name as string,
+		teacherId: teacherId,
 		iat: now,
 		exp: now + ACCESS_TOKEN_TTL,
 	};
@@ -139,6 +149,7 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
 				tenantId: user.tenant_id,
 				firstName: user.first_name,
 				lastName: user.last_name,
+				teacherId: teacherId,
 				isActive: user.is_active === 1,
 				createdAt: new Date().toISOString(),
 			},

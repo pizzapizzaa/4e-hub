@@ -26,6 +26,7 @@ export interface JwtPayload {
 	tenantId: string;
 	firstName: string;
 	lastName: string;
+	teacherId?: string;
 	iat: number;       // issued at (seconds)
 	exp: number;       // expires at (seconds)
 }
