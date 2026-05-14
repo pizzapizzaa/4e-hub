@@ -8,7 +8,7 @@ export type UserRole =
   | 'student'
   | 'guardian';
 
-export type Subject = 'english' | 'maths' | 'science';
+export type Subject = 'english' | 'maths' | 'science' | 'bouldering';
 
 export type MaterialSource = 'khan_academy' | 'open_edx' | 'youtube' | 'custom';
 

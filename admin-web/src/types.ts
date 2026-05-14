@@ -1,5 +1,5 @@
 export type UserRole = 'super_admin' | 'district_admin' | 'school_admin' | 'teacher' | 'student' | 'guardian';
-export type Subject = 'english' | 'maths' | 'science';
+export type Subject = 'english' | 'maths' | 'science' | 'bouldering';
 export type MaterialSource = 'khan_academy' | 'open_edx' | 'youtube' | 'custom';
 export type TeachingMethod = 'direct_instruction' | 'inquiry_based' | 'flipped_classroom' | 'blended';
 

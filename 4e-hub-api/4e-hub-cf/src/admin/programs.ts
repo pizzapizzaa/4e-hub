@@ -5,7 +5,7 @@ import { requireAuth } from '../lib/require-auth.ts';
 const ADMIN_ROLES  = new Set(['super_admin', 'district_admin', 'school_admin']);
 const CREATE_ROLES = new Set(['super_admin', 'district_admin']);
 
-const VALID_SUBJECTS = new Set(['english', 'maths', 'science']);
+const VALID_SUBJECTS = new Set(['english', 'maths', 'science', 'bouldering']);
 const VALID_METHODS  = new Set(['direct_instruction', 'inquiry_based', 'flipped_classroom', 'blended']);
 
 export async function handleGetPrograms(request: Request, env: Env): Promise<Response> {
@@ -61,7 +61,7 @@ export async function handleCreateProgram(request: Request, env: Env): Promise<R
 	const teachingMethod = typeof body.teachingMethod === 'string' ? body.teachingMethod.trim() : null;
 
 	if (!name)                                return err('name is required', 400, request);
-	if (!subject || !VALID_SUBJECTS.has(subject)) return err('subject must be english, maths, or science', 400, request);
+	if (!subject || !VALID_SUBJECTS.has(subject)) return err('subject must be english, maths, science, or bouldering', 400, request);
 	if (!level)                               return err('level is required', 400, request);
 	if (!teachingMethod || !VALID_METHODS.has(teachingMethod)) return err('invalid teachingMethod', 400, request);
 
@@ -71,12 +71,12 @@ export async function handleCreateProgram(request: Request, env: Env): Promise<R
 	const db = getTursoClient(env);
 	await db.execute(
 		'INSERT INTO programs (id, name, subject, level, description, material_sources, teaching_method, is_active, school_ids, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-		[id, name, subject, level, description, '[]', teachingMethod, 1, '[]', createdAt],
+		[id, name, subject, level, description, subject === 'bouldering' ? '["youtube"]' : '[]', teachingMethod, 1, '[]', createdAt],
 	);
 
 	return json({
 		id, name, subject, level, description,
-		materialSources: [],
+		materialSources: subject === 'bouldering' ? ['youtube'] : [],
 		teachingMethod,
 		isActive: true,
 		schoolIds: [],

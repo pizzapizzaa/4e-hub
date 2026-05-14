@@ -4,9 +4,10 @@ import { showToast } from '../main.js';
 import type { LearningProgram } from '../types.js';
 
 const SUBJECT_BADGE: Record<string, string> = {
-  english: 'badge-green',
-  maths:   'badge-orange',
-  science: 'badge-gray',
+  english:    'badge-green',
+  maths:      'badge-orange',
+  science:    'badge-gray',
+  bouldering: 'badge-blue',
 };
 
 export async function renderPrograms(): Promise<void> {
@@ -69,6 +70,7 @@ function openAddProgramModal(): void {
           <option value="english">English</option>
           <option value="maths">Maths</option>
           <option value="science">Science</option>
+          <option value="bouldering">Bouldering</option>
         </select>
 
         <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="prog-level">Level *</label>
