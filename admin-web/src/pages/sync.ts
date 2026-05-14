@@ -1,4 +1,5 @@
 import { getSyncStatus, triggerSync } from '../api.js';
+import { esc } from '../escape.js';
 import { showToast } from '../main.js';
 
 export async function renderSync(): Promise<void> {
@@ -21,8 +22,8 @@ export async function renderSync(): Promise<void> {
         <div class="sync-dot${status.isPending ? ' pending' : ''}"></div>
         <span>${status.isPending ? 'Sync in progress…' : 'All apps up to date'}</span>
       </div>
-      <div style="font-size:13px;color:var(--muted);margin-top:6px">Last synced: ${lastSync}</div>
-      ${status.pendingChanges > 0 ? `<div style="font-size:13px;color:var(--orange);margin-top:4px">${status.pendingChanges} pending change(s)</div>` : ''}
+      <div style="font-size:13px;color:var(--muted);margin-top:6px">Last synced: ${esc(lastSync)}</div>
+      ${status.pendingChanges > 0 ? `<div style="font-size:13px;color:var(--orange);margin-top:4px">${esc(status.pendingChanges)} pending change(s)</div>` : ''}
     </div>
 
     ${status.connectedApps.length ? `
@@ -31,7 +32,7 @@ export async function renderSync(): Promise<void> {
         ${status.connectedApps.map(a => `
           <div class="sync-row">
             <div class="sync-dot"></div>
-            <span style="font-size:15px">${a}</span>
+            <span style="font-size:15px">${esc(a)}</span>
           </div>`).join('')}
       </div>` : ''}
 

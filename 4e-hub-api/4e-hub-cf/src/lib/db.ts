@@ -90,6 +90,35 @@ export class TursoClient {
 
 		return { rows: parsed, affectedRows: affected_row_count };
 	}
+
+	/** Execute multiple statements atomically inside a BEGIN/COMMIT transaction. */
+	async batch(stmts: { sql: string; args?: TursoArgValue[] }[]): Promise<void> {
+		const requests: object[] = [
+			{ type: 'execute', stmt: { sql: 'BEGIN', args: [] } },
+			...stmts.map(s => ({ type: 'execute', stmt: { sql: s.sql, args: (s.args ?? []).map(encodeArg) } })),
+			{ type: 'execute', stmt: { sql: 'COMMIT', args: [] } },
+			{ type: 'close' },
+		];
+
+		const res = await fetch(`${this.baseUrl}/v2/pipeline`, {
+			method: 'POST',
+			headers: {
+				Authorization: `Bearer ${this.token}`,
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({ requests }),
+		});
+
+		if (!res.ok) {
+			const text = await res.text();
+			throw new Error(`Turso HTTP ${res.status}: ${text}`);
+		}
+
+		const data = (await res.json()) as TursoPipelineResponse;
+		for (const result of data.results) {
+			if (result.type === 'error') throw new Error(`Turso batch error: ${result.error.message}`);
+		}
+	}
 }
 
 export function getTursoClient(env: Env): TursoClient {

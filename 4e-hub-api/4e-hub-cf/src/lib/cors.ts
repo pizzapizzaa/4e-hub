@@ -1,17 +1,19 @@
-// Allowed origins — tighten this once you have a production domain
 const ALLOWED_ORIGINS = new Set([
 	'http://localhost:8081',
 	'http://localhost:8787',
-	'https://4e-hub.workers.dev',
+	'https://admin-web-gamma-lime.vercel.app',
+	'https://4e-hub-cf.4d-admin.workers.dev',
 ]);
 
 function corsHeaders(origin: string | null): Record<string, string> {
-	const allowed = origin && ALLOWED_ORIGINS.has(origin) ? origin : 'http://localhost:8081';
+	// Fall back to a null origin (blocked) for unrecognised callers — do NOT
+	// reflect an arbitrary origin back, which would open CORS to everyone.
+	const allowed = origin && ALLOWED_ORIGINS.has(origin) ? origin : 'null';
 	return {
 		'Access-Control-Allow-Origin': allowed,
 		'Access-Control-Allow-Methods': 'POST, OPTIONS',
 		'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-		'Access-Control-Max-Age': '86400',
+		'Access-Control-Max-Age': '600',
 		Vary: 'Origin',
 	};
 }

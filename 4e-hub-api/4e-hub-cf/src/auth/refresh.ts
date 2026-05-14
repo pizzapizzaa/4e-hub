@@ -2,10 +2,15 @@ import { err, json } from '../lib/cors.ts';
 import { getTursoClient } from '../lib/db.ts';
 import { generateToken, hashToken, signJwt, type JwtPayload } from '../lib/jwt.ts';
 
-const ACCESS_TOKEN_TTL = 24 * 60 * 60; // 24 hours
-const REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60;
+const ACCESS_TOKEN_TTL  = 60 * 60;            // 1 hour
+const REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60; // 30 days
 
 export async function handleRefresh(request: Request, env: Env): Promise<Response> {
+	// ── Rate limit by IP (10 req / 60 s) ─────────────────────────────────────
+	const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+	const { success } = await env.RATE_LIMITER.limit({ key: `refresh:${ip}` });
+	if (!success) return err('Too many requests. Please slow down.', 429, request);
+
 	let body: { refreshToken?: unknown };
 	try {
 		body = (await request.json()) as typeof body;
@@ -42,17 +47,19 @@ export async function handleRefresh(request: Request, env: Env): Promise<Respons
 		return err('Refresh token expired. Please log in again.', 401, request);
 	}
 
-	// Rotate: delete old token, issue new one
-	await db.execute('DELETE FROM refresh_tokens WHERE id = ?', [row.id as string]);
-
+	// Rotate: delete old token and insert new one atomically in a single batch
 	const newRefreshToken = generateToken();
-	const newTokenHash = await hashToken(newRefreshToken);
-	const newExpiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL * 1000).toISOString();
+	const newTokenHash    = await hashToken(newRefreshToken);
+	const newExpiresAt    = new Date(Date.now() + REFRESH_TOKEN_TTL * 1000).toISOString();
+	const newTokenId      = crypto.randomUUID();
 
-	await db.execute(
-		'INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)',
-		[crypto.randomUUID(), row.user_id as string, newTokenHash, newExpiresAt, new Date().toISOString()],
-	);
+	await db.batch([
+		{ sql: 'DELETE FROM refresh_tokens WHERE id = ?', args: [row.id as string] },
+		{
+			sql: 'INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)',
+			args: [newTokenId, row.user_id as string, newTokenHash, newExpiresAt, new Date().toISOString()],
+		},
+	]);
 
 	// Issue new access token
 	const now = Math.floor(Date.now() / 1000);

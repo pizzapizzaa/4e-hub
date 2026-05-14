@@ -58,6 +58,7 @@ async function initSchema(db: SQLite.SQLiteDatabase): Promise<void> {
     CREATE TABLE IF NOT EXISTS lesson_sessions (
       id TEXT PRIMARY KEY,
       student_id TEXT NOT NULL,
+      school_id TEXT NOT NULL DEFAULT '',
       program_id TEXT NOT NULL,
       subject TEXT NOT NULL,
       lesson_id TEXT NOT NULL,
@@ -84,6 +85,7 @@ async function initSchema(db: SQLite.SQLiteDatabase): Promise<void> {
       question_id TEXT NOT NULL,
       session_id TEXT NOT NULL,
       student_id TEXT NOT NULL,
+      school_id TEXT NOT NULL DEFAULT '',
       selected_index INTEGER NOT NULL,
       is_correct INTEGER NOT NULL,
       attempted_at TEXT NOT NULL,
@@ -93,6 +95,7 @@ async function initSchema(db: SQLite.SQLiteDatabase): Promise<void> {
     CREATE TABLE IF NOT EXISTS learning_trail (
       id TEXT PRIMARY KEY,
       student_id TEXT NOT NULL,
+      school_id TEXT NOT NULL DEFAULT '',
       subject TEXT NOT NULL,
       lesson_id TEXT NOT NULL,
       lesson_title TEXT NOT NULL,

@@ -1,4 +1,14 @@
 // ── Main entry ────────────────────────────────────────────────────────────────
+import {
+    IS_MOCK,
+    attemptTokenRefresh,
+    clearAuth,
+    getToken,
+    isTokenExpired,
+    setExpiresAt,
+    setRefreshToken,
+    setToken,
+} from './api.js';
 import { NAV_ITEMS, getPageRenderer, type PageId } from './router.js';
 
 // ── DOM refs ─────────────────────────────────────────────────────────────────
@@ -27,7 +37,11 @@ export function setLoading(): void {
 }
 
 export function setError(msg: string): void {
-  content.innerHTML = `<div class="error-msg">${msg}</div>`;
+  const div = document.createElement('div');
+  div.className = 'error-msg';
+  div.textContent = msg;
+  content.innerHTML = '';
+  content.appendChild(div);
 }
 
 // ── Nav build ─────────────────────────────────────────────────────────────────
@@ -88,8 +102,145 @@ overlay.addEventListener('click', () => {
   overlay.classList.remove('open');
 });
 
+// ── Auth gate ─────────────────────────────────────────────────────────────────
+function startApp(): void {
+  const app = document.getElementById('app')!;
+  app.style.display = '';
+  addLogoutButton();
+  buildNav();
+  const hash = location.hash.replace('#', '') as PageId;
+  const startPage: PageId = NAV_ITEMS.some(n => n.id === hash) ? hash : 'dashboard';
+  navigate(startPage);
+}
+
+function addLogoutButton(): void {
+  const topbarUser = document.getElementById('topbar-user')!;
+  topbarUser.textContent = '';
+  const btn = document.createElement('button');
+  btn.textContent = 'Logout';
+  btn.className = 'btn';
+  btn.style.cssText = 'font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer;';
+  btn.addEventListener('click', async () => {
+    const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+    if (apiUrl) {
+      const { getRefreshToken } = await import('./api.js');
+      try {
+        await fetch(`${apiUrl}/api/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
+          },
+          body: JSON.stringify({ refreshToken: getRefreshToken() }),
+        });
+      } catch { /* best effort — clear session regardless */ }
+    }
+    clearAuth();
+    window.location.reload();
+  });
+  topbarUser.appendChild(btn);
+}
+
+function showLoginPage(): void {
+  const app = document.getElementById('app')!;
+  app.style.display = 'none';
+
+  const page = document.createElement('div');
+  page.id = 'login-page';
+  // Static developer-authored HTML — safe to use innerHTML here
+  page.innerHTML = `
+    <div style="
+      min-height:100dvh;display:flex;align-items:center;justify-content:center;
+      background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      padding:20px;
+    ">
+      <div style="
+        background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+        padding:40px 36px;width:100%;max-width:380px;
+      ">
+        <h1 style="font-size:20px;font-weight:800;color:var(--green);margin-bottom:4px">4E Global</h1>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:28px">Admin Portal — Sign in</p>
+        <form id="login-form" novalidate>
+          <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="login-email">Email</label>
+          <input id="login-email" type="email" required autocomplete="username"
+            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:16px;outline:none" />
+          <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="login-password">Password</label>
+          <input id="login-password" type="password" required autocomplete="current-password"
+            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:20px;outline:none" />
+          <div id="login-error" role="alert" style="
+            display:none;background:#FEF2F2;color:#DC2626;border-radius:6px;
+            padding:10px 12px;font-size:13px;margin-bottom:16px;
+          "></div>
+          <button type="submit" id="login-submit" style="
+            width:100%;padding:12px;background:var(--green);color:#fff;border:none;
+            border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;
+          ">Sign in</button>
+        </form>
+      </div>
+    </div>`;
+  document.body.appendChild(page);
+
+  const form      = page.querySelector<HTMLFormElement>('#login-form')!;
+  const emailIn   = page.querySelector<HTMLInputElement>('#login-email')!;
+  const passIn    = page.querySelector<HTMLInputElement>('#login-password')!;
+  const errorBox  = page.querySelector<HTMLDivElement>('#login-error')!;
+  const submitBtn = page.querySelector<HTMLButtonElement>('#login-submit')!;
+
+  function setLoginError(msg: string): void {
+    errorBox.textContent = msg;  // textContent — no XSS
+    errorBox.style.display = msg ? 'block' : 'none';
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    setLoginError('');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+
+    const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
+    if (!apiUrl) { setLoginError('API URL not configured.'); submitBtn.disabled = false; submitBtn.textContent = 'Sign in'; return; }
+
+    try {
+      const res = await fetch(`${apiUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailIn.value.trim().toLowerCase(), password: passIn.value }),
+      });
+      if (!res.ok) {
+        setLoginError('Invalid email or password. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign in';
+        return;
+      }
+      const data = await res.json() as { accessToken: string; refreshToken: string; expiresAt: number };
+      setToken(data.accessToken);
+      setRefreshToken(data.refreshToken);
+      setExpiresAt(data.expiresAt);
+      page.remove();
+      startApp();
+    } catch {
+      setLoginError('Network error. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in';
+    }
+  });
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
-buildNav();
-const hash = location.hash.replace('#', '') as PageId;
-const startPage: PageId = NAV_ITEMS.some(n => n.id === hash) ? hash : 'dashboard';
-navigate(startPage);
+(async function init() {
+  if (IS_MOCK) {
+    // Dev / mock mode — no auth required
+    startApp();
+    return;
+  }
+  const token = getToken();
+  if (token && !isTokenExpired()) {
+    startApp();
+    return;
+  }
+  if (token && isTokenExpired()) {
+    const ok = await attemptTokenRefresh();
+    if (ok) { startApp(); return; }
+  }
+  showLoginPage();
+})();

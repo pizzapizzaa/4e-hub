@@ -1,4 +1,5 @@
 import { getMaterialsConfig, getSchools, updateMaterialsConfig } from '../api.js';
+import { esc } from '../escape.js';
 import { showToast } from '../main.js';
 import type { MaterialsConfig } from '../types.js';
 
@@ -26,7 +27,7 @@ export async function renderMaterials(): Promise<void> {
     <div class="card" style="padding:20px;display:flex;align-items:center;gap:12px">
       <label style="font-weight:600;white-space:nowrap">School</label>
       <select id="school-select" style="flex:1;padding:8px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:14px">
-        ${schools.map(s => `<option value="${s.id}">${s.name}</option>`).join('')}
+        ${schools.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}
       </select>
     </div>
     <div id="mat-config"></div>`;

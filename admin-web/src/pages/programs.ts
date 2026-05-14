@@ -1,4 +1,5 @@
 import { getPrograms } from '../api.js';
+import { esc } from '../escape.js';
 import type { LearningProgram } from '../types.js';
 
 const SUBJECT_BADGE: Record<string, string> = {
@@ -43,17 +44,17 @@ export async function renderPrograms(): Promise<void> {
 }
 
 function programRow(p: LearningProgram): string {
-  const subjectBadge = `<span class="badge ${SUBJECT_BADGE[p.subject] ?? 'badge-gray'}">${p.subject}</span>`;
+  const subjectBadge = `<span class="badge ${esc(SUBJECT_BADGE[p.subject] ?? 'badge-gray')}">${esc(p.subject)}</span>`;
   const statusBadge  = p.isActive
     ? '<span class="badge badge-green">Active</span>'
     : '<span class="badge badge-gray">Inactive</span>';
-  const method = p.teachingMethod.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  return `<tr data-id="${p.id}">
-    <td style="font-weight:600">${p.name}</td>
+  const method = esc(p.teachingMethod.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
+  return `<tr data-id="${esc(p.id)}">
+    <td style="font-weight:600">${esc(p.name)}</td>
     <td>${subjectBadge}</td>
-    <td style="text-transform:capitalize">${p.level}</td>
+    <td style="text-transform:capitalize">${esc(p.level)}</td>
     <td style="color:var(--muted);font-size:13px">${method}</td>
-    <td>${p.schoolIds.length}</td>
+    <td>${esc(p.schoolIds.length)}</td>
     <td>${statusBadge}</td>
   </tr>`;
 }

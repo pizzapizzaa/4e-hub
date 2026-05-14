@@ -6,7 +6,7 @@
 // Reads from .env — requires: TURSO_URL, TURSO_AUTH_TOKEN, SUPER_ADMIN_EMAIL, SUPER_ADMIN_PASSWORD_HASH
 // Install dep: npm install @libsql/client dotenv
 
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 const { createClient } = require('@libsql/client');
 
 const required = ['TURSO_URL', 'TURSO_AUTH_TOKEN', 'SUPER_ADMIN_EMAIL', 'SUPER_ADMIN_PASSWORD_HASH'];

@@ -79,8 +79,8 @@ export async function refreshSession(): Promise<boolean> {
       body: JSON.stringify({ refreshToken: _session.refreshToken }),
     });
     if (!res.ok) return false;
-    const data = await res.json() as { accessToken: string; expiresAt: number };
-    setSession({ ..._session, accessToken: data.accessToken, expiresAt: data.expiresAt });
+    const data = await res.json() as { accessToken: string; refreshToken: string; expiresAt: number };
+    setSession({ ..._session, accessToken: data.accessToken, refreshToken: data.refreshToken, expiresAt: data.expiresAt });
     return true;
   } catch {
     return false;

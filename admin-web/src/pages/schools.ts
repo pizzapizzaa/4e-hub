@@ -1,4 +1,5 @@
 import { getSchools } from '../api.js';
+import { esc } from '../escape.js';
 import type { School } from '../types.js';
 
 export async function renderSchools(): Promise<void> {
@@ -39,11 +40,11 @@ function schoolRow(s: School): string {
   const badge = s.isActive
     ? '<span class="badge badge-green">Active</span>'
     : '<span class="badge badge-gray">Inactive</span>';
-  return `<tr data-id="${s.id}">
-    <td style="font-weight:600">${s.name}</td>
-    <td style="color:var(--muted)">${s.address}</td>
-    <td>${s.teacherCount}</td>
-    <td>${s.studentCount}</td>
+  return `<tr data-id="${esc(s.id)}">
+    <td style="font-weight:600">${esc(s.name)}</td>
+    <td style="color:var(--muted)">${esc(s.address)}</td>
+    <td>${esc(s.teacherCount)}</td>
+    <td>${esc(s.studentCount)}</td>
     <td>${badge}</td>
   </tr>`;
 }

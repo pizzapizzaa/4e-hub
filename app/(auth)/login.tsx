@@ -1,7 +1,7 @@
 import { getHomeRoute } from '@/lib/auth/roles';
 import { setSession } from '@/lib/auth/session';
 import { injectDevSession } from '@/lib/dev/mock-session';
-import type { User } from '@/types';
+import type { User, UserRole } from '@/types';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
@@ -16,7 +16,9 @@ import {
     View,
 } from 'react-native';
 
-const IS_DEV = !process.env.EXPO_PUBLIC_API_URL;
+const VALID_ROLES = new Set<string>([
+  'super_admin', 'district_admin', 'school_admin', 'teacher', 'student', 'guardian',
+]);
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -56,6 +58,11 @@ export default function LoginScreen() {
         expiresAt: number;
       };
 
+      // Validate the role from the API response before trusting it
+      if (!VALID_ROLES.has(data.user?.role)) {
+        throw new Error('Invalid session data received. Please try again.');
+      }
+
       setSession({
         user: data.user,
         accessToken: data.accessToken,
@@ -63,7 +70,7 @@ export default function LoginScreen() {
         expiresAt: data.expiresAt,
       });
 
-      const homeRoute = getHomeRoute(data.user.role);
+      const homeRoute = getHomeRoute(data.user.role as UserRole);
       router.replace(homeRoute as never);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'An error occurred';
@@ -118,7 +125,7 @@ export default function LoginScreen() {
           }
         </TouchableOpacity>
 
-        {IS_DEV && (
+        {__DEV__ && (
           <TouchableOpacity style={styles.devButton} onPress={handleDevLogin}>
             <Text style={styles.devButtonText}>⚡ Dev Login (no backend)</Text>
           </TouchableOpacity>

@@ -3,10 +3,15 @@ import { getTursoClient } from '../lib/db.ts';
 import { generateToken, hashToken, signJwt, type JwtPayload } from '../lib/jwt.ts';
 import { verifyPassword } from '../lib/password.ts';
 
-const ACCESS_TOKEN_TTL = 24 * 60 * 60;        // 24 hours
+const ACCESS_TOKEN_TTL  = 60 * 60;            // 1 hour
 const REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60; // 30 days
 
 export async function handleLogin(request: Request, env: Env): Promise<Response> {
+	// ── Rate limit by IP (10 attempts / 60 s) ────────────────────────────────
+	const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+	const { success } = await env.RATE_LIMITER.limit({ key: `login:${ip}` });
+	if (!success) return err('Too many login attempts. Please try again later.', 429, request);
+
 	let body: { email?: unknown; password?: unknown };
 	try {
 		body = (await request.json()) as typeof body;
@@ -20,6 +25,8 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
 	if (!email || !password) {
 		return err('Email and password are required', 400, request);
 	}
+
+	const db = getTursoClient(env);
 
 	// ── System super admin bypass ─────────────────────────────────────────────
 	// Checked against Worker secrets — no DB lookup, works even if DB is down.
@@ -44,19 +51,27 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
 			exp: now + ACCESS_TOKEN_TTL,
 		};
 		const accessToken = await signJwt(payload, env.JWT_SECRET);
+
+		// Issue a real refresh token so the session can be silently renewed and revoked
+		const refreshToken = generateToken();
+		const tokenHash = await hashToken(refreshToken);
+		const expiresAt  = new Date(Date.now() + REFRESH_TOKEN_TTL * 1000).toISOString();
+		await db.execute(
+			'INSERT INTO refresh_tokens (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, ?, ?)',
+			[crypto.randomUUID(), 'system-super-admin', tokenHash, expiresAt, new Date().toISOString()],
+		);
+
 		return json(
 			{
 				user: { ...payload, id: payload.sub, isActive: true, createdAt: new Date().toISOString() },
 				accessToken,
-				refreshToken:  null,
-				expiresAt:     payload.exp,
+				refreshToken,
+				expiresAt: payload.exp,
 			},
 			200,
 			request,
 		);
 	}
-
-	const db = getTursoClient(env);
 
 	// Fetch user — always run password check to avoid timing-based user enumeration
 	const { rows } = await db.execute(

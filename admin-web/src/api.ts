@@ -2,12 +2,50 @@ import { DEV_LEARNERS, DEV_PROGRAMS, DEV_SCHOOLS, DEV_SYNC_STATUS, DEV_TEACHERS 
 import type { LearningProgram, MaterialsConfig, School, Student, SyncStatus, Teacher } from './types.js';
 
 const API_URL = import.meta.env.VITE_API_URL as string | undefined;
-const IS_MOCK  = !API_URL;
+export const IS_MOCK = !API_URL;
 
 // ── Token storage ─────────────────────────────────────────────────────────────
-export function getToken(): string | null { return sessionStorage.getItem('access_token'); }
-export function setToken(t: string): void  { sessionStorage.setItem('access_token', t); }
-export function clearToken(): void         { sessionStorage.removeItem('access_token'); }
+export function getToken(): string | null         { return sessionStorage.getItem('access_token'); }
+export function setToken(t: string): void         { sessionStorage.setItem('access_token', t); }
+export function clearToken(): void                { sessionStorage.removeItem('access_token'); }
+export function getRefreshToken(): string | null  { return sessionStorage.getItem('refresh_token'); }
+export function setRefreshToken(t: string): void  { sessionStorage.setItem('refresh_token', t); }
+export function getExpiresAt(): number            { return parseInt(sessionStorage.getItem('expires_at') ?? '0', 10); }
+export function setExpiresAt(t: number): void     { sessionStorage.setItem('expires_at', String(t)); }
+
+/** Returns true if the access token is missing or within 60 s of expiry. */
+export function isTokenExpired(): boolean {
+  const exp = getExpiresAt();
+  return exp === 0 || Date.now() >= (exp - 60) * 1000;
+}
+
+export function clearAuth(): void {
+  sessionStorage.removeItem('access_token');
+  sessionStorage.removeItem('refresh_token');
+  sessionStorage.removeItem('expires_at');
+}
+
+/** Silent token refresh. Returns true on success. */
+export async function attemptTokenRefresh(): Promise<boolean> {
+  if (!API_URL) return false;
+  const rt = getRefreshToken();
+  if (!rt) return false;
+  try {
+    const res = await fetch(`${API_URL}/api/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: rt }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json() as { accessToken: string; refreshToken: string; expiresAt: number };
+    setToken(data.accessToken);
+    setRefreshToken(data.refreshToken);
+    setExpiresAt(data.expiresAt);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // ── Core fetch ────────────────────────────────────────────────────────────────
 async function apiFetch<T>(path: string, init: RequestInit = {}): Promise<T> {
