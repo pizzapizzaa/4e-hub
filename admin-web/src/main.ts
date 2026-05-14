@@ -54,6 +54,9 @@ function buildNav(): void {
     const btn = document.createElement('button');
     btn.className = `nav-item${item.id === activePage ? ' active' : ''}`;
     btn.innerHTML = `<span class="icon">${item.icon}</span>${item.label}`;
+    // ensure active press handling on touch devices
+    btn.setAttribute('ontouchstart', '');
+    attachPressHandlers(btn);
     btn.addEventListener('click', () => navigate(item.id));
     sidebarNav.appendChild(btn);
 
@@ -61,6 +64,8 @@ function buildNav(): void {
     const bBtn = document.createElement('button');
     bBtn.className = `bnav-item${item.id === activePage ? ' active' : ''}`;
     bBtn.innerHTML = `<span class="icon">${item.icon}</span>${item.label}`;
+    bBtn.setAttribute('ontouchstart', '');
+    attachPressHandlers(bBtn);
     bBtn.addEventListener('click', () => navigate(item.id));
     bnavInner.appendChild(bBtn);
   }
@@ -118,8 +123,9 @@ function addLogoutButton(): void {
   topbarUser.textContent = '';
   const btn = document.createElement('button');
   btn.textContent = 'Logout';
-  btn.className = 'btn';
-  btn.style.cssText = 'font-size:12px;padding:6px 14px;border-radius:6px;cursor:pointer;';
+  btn.className = 'btn btn-orange';
+  btn.setAttribute('ontouchstart', '');
+  attachPressHandlers(btn);
   btn.addEventListener('click', async () => {
     const apiUrl = import.meta.env.VITE_API_URL as string | undefined;
     if (apiUrl) {
@@ -139,6 +145,24 @@ function addLogoutButton(): void {
     window.location.reload();
   });
   topbarUser.appendChild(btn);
+}
+
+// Add small press handlers so mobile/touch devices get the 3D "press" animation
+function attachPressHandlers(el: HTMLElement): void {
+  let held = false;
+  const down = (): void => {
+    held = true;
+    el.classList.add('pressed');
+  };
+  const up = (): void => {
+    if (!held) return;
+    held = false;
+    el.classList.remove('pressed');
+  };
+  el.addEventListener('pointerdown', down);
+  el.addEventListener('pointerup', up);
+  el.addEventListener('pointercancel', up);
+  el.addEventListener('pointerleave', up);
 }
 
 function showLoginPage(): void {
