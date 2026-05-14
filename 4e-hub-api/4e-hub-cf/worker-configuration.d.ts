@@ -16,8 +16,8 @@ declare namespace Cloudflare {
 		SUPER_ADMIN_EMAIL: string;
 		/** System super admin password hash — set via: wrangler secret put SUPER_ADMIN_PASSWORD_HASH */
 		SUPER_ADMIN_PASSWORD_HASH: string;
-		/** Rate limiter binding — 10 req / 60 s per IP */
-		RATE_LIMITER: RateLimit;
+		/** Rate limiter binding — 10 req / 60 s per IP (optional: only active when the binding is provisioned) */
+		RATE_LIMITER?: RateLimit;
 	}
 }
 interface Env extends Cloudflare.Env {}

@@ -8,9 +8,11 @@ const REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60; // 30 days
 
 export async function handleLogin(request: Request, env: Env): Promise<Response> {
 	// ── Rate limit by IP (10 attempts / 60 s) ────────────────────────────────
-	const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
-	const { success } = await env.RATE_LIMITER.limit({ key: `login:${ip}` });
-	if (!success) return err('Too many login attempts. Please try again later.', 429, request);
+	if (env.RATE_LIMITER) {
+		const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+		const { success } = await env.RATE_LIMITER.limit({ key: `login:${ip}` });
+		if (!success) return err('Too many login attempts. Please try again later.', 429, request);
+	}
 
 	let body: { email?: unknown; password?: unknown };
 	try {

@@ -7,9 +7,11 @@ const REFRESH_TOKEN_TTL = 30 * 24 * 60 * 60; // 30 days
 
 export async function handleRefresh(request: Request, env: Env): Promise<Response> {
 	// ── Rate limit by IP (10 req / 60 s) ─────────────────────────────────────
-	const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
-	const { success } = await env.RATE_LIMITER.limit({ key: `refresh:${ip}` });
-	if (!success) return err('Too many requests. Please slow down.', 429, request);
+	if (env.RATE_LIMITER) {
+		const ip = request.headers.get('CF-Connecting-IP') ?? 'unknown';
+		const { success } = await env.RATE_LIMITER.limit({ key: `refresh:${ip}` });
+		if (!success) return err('Too many requests. Please slow down.', 429, request);
+	}
 
 	let body: { refreshToken?: unknown };
 	try {
