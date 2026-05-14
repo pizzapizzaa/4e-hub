@@ -195,9 +195,8 @@ function showLoginPage(): void {
             display:none;background:#FEF2F2;color:#DC2626;border-radius:6px;
             padding:10px 12px;font-size:13px;margin-bottom:16px;
           "></div>
-          <button type="submit" id="login-submit" style="
-            width:100%;padding:12px;background:var(--green);color:#fff;border:none;
-            border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;
+          <button type="submit" id="login-submit" class="btn btn-orange" style="
+            width:100%;font-size:15px;
           ">Sign in</button>
         </form>
       </div>
