@@ -1,3 +1,4 @@
+import { PrimaryButton } from '@/components/ui/primary-button';
 import { getHomeRoute } from '@/lib/auth/roles';
 import { setSession } from '@/lib/auth/session';
 import { injectDevSession } from '@/lib/dev/mock-session';
@@ -12,7 +13,6 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    TouchableOpacity,
     View,
 } from 'react-native';
 
@@ -113,22 +113,13 @@ export default function LoginScreen() {
           onSubmitEditing={handleLogin}
         />
 
-        <TouchableOpacity
-          style={[styles.button, loading && styles.buttonDisabled]}
-          onPress={handleLogin}
-          disabled={loading}
-          accessibilityLabel="Sign in"
-        >
-          {loading
-            ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.buttonText}>Sign In</Text>
-          }
-        </TouchableOpacity>
+        {loading
+          ? <ActivityIndicator color="#FFA12B" style={{ marginTop: 12 }} />
+          : <PrimaryButton label="SIGN IN" onPress={handleLogin} disabled={loading} />
+        }
 
         {__DEV__ && (
-          <TouchableOpacity style={styles.devButton} onPress={handleDevLogin}>
-            <Text style={styles.devButtonText}>⚡ Dev Login (no backend)</Text>
-          </TouchableOpacity>
+          <PrimaryButton label="⚡ DEV LOGIN" onPress={handleDevLogin} />
         )}
       </View>
     </KeyboardAvoidingView>
@@ -178,32 +169,5 @@ const styles = StyleSheet.create({
     color: '#222',
     backgroundColor: '#FAFAFA',
   },
-  button: {
-    backgroundColor: '#F97316',
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-    marginTop: 6,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  devButton: {
-    marginTop: 16,
-    borderWidth: 1.5,
-    borderColor: '#16A34A',
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  devButtonText: {
-    color: '#16A34A',
-    fontSize: 14,
-    fontWeight: '600',
-  },
+
 });
