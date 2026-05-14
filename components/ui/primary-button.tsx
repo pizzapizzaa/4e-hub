@@ -9,7 +9,6 @@ interface PrimaryButtonProps {
 export function PrimaryButton({ label, onPress, disabled = false }: PrimaryButtonProps) {
   return (
     <View style={styles.wrapper}>
-      <View style={styles.shadow} />
       <TouchableOpacity
         activeOpacity={1}
         disabled={disabled}
@@ -27,19 +26,7 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     margin: 20,
   },
-  shadow: {
-    position: 'absolute',
-    bottom: -6,
-    left: 4,
-    right: -4,
-    height: '100%',
-    backgroundColor: '#2B1800',
-    borderRadius: 5,
-    zIndex: 0,
-  },
   button: {
-    position: 'relative',
-    zIndex: 1,
     backgroundColor: '#FFA12B',
     paddingVertical: 16,
     paddingHorizontal: 36,
