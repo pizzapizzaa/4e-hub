@@ -18,6 +18,8 @@
 	// wrangler secret put TURSO_URL
 	// wrangler secret put TURSO_AUTH_TOKEN
 	// wrangler secret put JWT_SECRET
+	// wrangler secret put SUPER_ADMIN_EMAIL
+	// wrangler secret put SUPER_ADMIN_PASSWORD_HASH
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

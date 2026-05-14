@@ -21,6 +21,41 @@ export async function handleLogin(request: Request, env: Env): Promise<Response>
 		return err('Email and password are required', 400, request);
 	}
 
+	// ── System super admin bypass ─────────────────────────────────────────────
+	// Checked against Worker secrets — no DB lookup, works even if DB is down.
+	// The JWT role 'super_admin' grants global override in all apps.
+	if (
+		env.SUPER_ADMIN_EMAIL &&
+		env.SUPER_ADMIN_PASSWORD_HASH &&
+		email === env.SUPER_ADMIN_EMAIL.toLowerCase() &&
+		verifyPassword(password, env.SUPER_ADMIN_PASSWORD_HASH)
+	) {
+		const now = Math.floor(Date.now() / 1000);
+		const payload: JwtPayload = {
+			sub:        'system-super-admin',
+			email:      env.SUPER_ADMIN_EMAIL,
+			role:       'super_admin',
+			schoolId:   'system',
+			districtId: 'system',
+			tenantId:   'system',
+			firstName:  '4E',
+			lastName:   'Admin',
+			iat: now,
+			exp: now + ACCESS_TOKEN_TTL,
+		};
+		const accessToken = await signJwt(payload, env.JWT_SECRET);
+		return json(
+			{
+				user: { ...payload, id: payload.sub, isActive: true, createdAt: new Date().toISOString() },
+				accessToken,
+				refreshToken:  null,
+				expiresAt:     payload.exp,
+			},
+			200,
+			request,
+		);
+	}
+
 	const db = getTursoClient(env);
 
 	// Fetch user — always run password check to avoid timing-based user enumeration

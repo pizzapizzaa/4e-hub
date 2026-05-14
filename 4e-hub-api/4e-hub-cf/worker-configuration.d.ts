@@ -12,6 +12,10 @@ declare namespace Cloudflare {
 		TURSO_AUTH_TOKEN: string;
 		/** JWT signing secret (min 32 chars) — set via: wrangler secret put JWT_SECRET */
 		JWT_SECRET: string;
+		/** System super admin email — set via: wrangler secret put SUPER_ADMIN_EMAIL */
+		SUPER_ADMIN_EMAIL: string;
+		/** System super admin password hash — set via: wrangler secret put SUPER_ADMIN_PASSWORD_HASH */
+		SUPER_ADMIN_PASSWORD_HASH: string;
 	}
 }
 interface Env extends Cloudflare.Env {}
