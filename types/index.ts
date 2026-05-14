@@ -123,6 +123,7 @@ export interface Student {
 export interface LessonSession {
   id: string;
   studentId: string;
+  schoolId: string;        // RLS anchor
   programId: string;
   subject: Subject;
   lessonId: string;
@@ -135,6 +136,7 @@ export interface LessonSession {
 export interface LearningTrailEntry {
   id: string;
   studentId: string;
+  schoolId: string;        // RLS anchor
   subject: Subject;
   lessonId: string;
   lessonTitle: string;
@@ -181,6 +183,7 @@ export interface QuizAttempt {
   questionId: string;
   sessionId: string;
   studentId: string;
+  schoolId: string;        // RLS anchor
   selectedIndex: number;
   isCorrect: boolean;
   attemptedAt: string;
@@ -191,6 +194,7 @@ export interface QuizAttempt {
 export interface BroadcastSession {
   id: string;
   teacherId: string;
+  schoolId: string;        // RLS anchor
   classId: string;
   videoUrl: string;
   isLive: boolean;
@@ -202,6 +206,7 @@ export interface BroadcastSession {
 export interface TeacherMemoir {
   id: string;
   teacherId: string;
+  schoolId: string;        // RLS anchor
   studentId: string;
   classId: string;
   note: string;

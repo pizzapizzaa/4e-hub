@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS schools (
   district_id   TEXT NOT NULL,
   name          TEXT NOT NULL,
   address       TEXT,
+  admin_ids     TEXT NOT NULL DEFAULT '[]',      -- JSON array
   teacher_count INTEGER DEFAULT 0,
   student_count INTEGER DEFAULT 0,
   is_active     INTEGER DEFAULT 1,
