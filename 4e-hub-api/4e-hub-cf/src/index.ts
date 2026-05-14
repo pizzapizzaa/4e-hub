@@ -1,12 +1,12 @@
-import { handleLogin } from './auth/login.ts';
-import { handleLogout } from './auth/logout.ts';
-import { handleRefresh } from './auth/refresh.ts';
 import { handleGetLearners } from './admin/learners.ts';
 import { handleGetMaterials, handleUpdateMaterials } from './admin/materials.ts';
 import { handleGetPrograms } from './admin/programs.ts';
 import { handleGetSchool, handleGetSchools } from './admin/schools.ts';
 import { handleGetSyncStatus, handleTriggerSync } from './admin/sync.ts';
 import { handleGetTeachers } from './admin/teachers.ts';
+import { handleLogin } from './auth/login.ts';
+import { handleLogout } from './auth/logout.ts';
+import { handleRefresh } from './auth/refresh.ts';
 import { err, preflight } from './lib/cors.ts';
 
 export default {
