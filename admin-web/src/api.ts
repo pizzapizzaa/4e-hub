@@ -77,6 +77,13 @@ export const createSchool = (data: { name: string; address: string; districtId: 
 
 // ── Programs ──────────────────────────────────────────────────────────────────
 export const getPrograms = (): Promise<LearningProgram[]> => devOrFetch(DEV_PROGRAMS, () => apiFetch('/api/admin/programs'));
+export const createProgram = (data: {
+  name: string; subject: string; level: string; description: string;
+  teachingMethod: string;
+}): Promise<LearningProgram> =>
+  IS_MOCK
+    ? Promise.reject(new Error('Not available in mock mode'))
+    : apiFetch('/api/admin/programs', { method: 'POST', body: JSON.stringify(data) });
 
 // ── Teachers ──────────────────────────────────────────────────────────────────
 export const getTeachers = (schoolId?: string): Promise<Teacher[]> => {
