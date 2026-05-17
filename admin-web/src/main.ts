@@ -3,6 +3,7 @@ import {
     IS_MOCK,
     attemptTokenRefresh,
     clearAuth,
+    getCurrentUser,
     getRefreshToken,
     getToken,
     isTokenExpired,
@@ -49,8 +50,12 @@ export function setError(msg: string): void {
 function buildNav(): void {
   sidebarNav.innerHTML = '';
   bnavInner.innerHTML  = '';
+  const current = getCurrentUser();
+  const role = current?.role || 'admin';
+  const allowedForTeacher = new Set(['schools','programs','learners','materials','inaction']);
 
   for (const item of NAV_ITEMS) {
+    if (role === 'teacher' && !allowedForTeacher.has(item.id)) continue;
     // Sidebar item
     const btn = document.createElement('button');
     btn.className = `nav-item${item.id === activePage ? ' active' : ''}`;

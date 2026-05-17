@@ -13,6 +13,7 @@ import { handleGetClass, handleGetClassStudents, handleGetTeacherClasses } from 
 import { handleCreateMemoir, handleGetMemoirs, handleUpdateMemoir } from './inaction/memoir.ts';
 import { handleGetStudent } from './inaction/students.ts';
 import { err, preflight } from './lib/cors.ts';
+import { handleAddTeacherMaterial, handleGetTeacherMaterials } from './teacher/materials.ts';
 
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
@@ -65,6 +66,11 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 			const schoolId = materialsMatch[1];
 			if (method === 'GET') return handleGetMaterials(request, env, schoolId);
 			if (method === 'PUT') return handleUpdateMaterials(request, env, schoolId);
+		}
+
+		if (pathname === '/api/teacher/materials') {
+			if (method === 'GET') return handleGetTeacherMaterials(request, env);
+			if (method === 'POST') return handleAddTeacherMaterial(request, env);
 		}
 
 		// In-action (teacher) routes

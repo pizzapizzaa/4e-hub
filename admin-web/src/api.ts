@@ -93,11 +93,37 @@ export function getCurrentUserEmail(): string | null {
   }
 }
 
+export function getCurrentUser(): { email?: string; role?: string; userId?: string; schoolIds?: string[] } | null {
+  const token = sessionStorage.getItem('access_token');
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return {
+      email: typeof payload.email === 'string' ? payload.email : undefined,
+      role: typeof payload.role === 'string' ? payload.role : undefined,
+      userId: typeof payload.userId === 'string' ? payload.userId : (typeof payload.sub === 'string' ? payload.sub : undefined),
+      schoolIds: Array.isArray(payload.schoolIds) ? payload.schoolIds : (payload.schoolId ? [payload.schoolId] : []),
+    };
+  } catch {
+    return null;
+  }
+}
+
 // ── Programs ──────────────────────────────────────────────────────────────────
 export const getPrograms = (): Promise<LearningProgram[]> => devOrFetch(DEV_PROGRAMS, () => apiFetch('/api/admin/programs'));
 export const createProgram = (data: {
   name: string; subject: string; level: string; description: string;
   teachingMethod: string;
+}): Promise<LearningProgram> =>
+  IS_MOCK
+    ? Promise.reject(new Error('Not available in mock mode'))
+    : apiFetch('/api/admin/programs', { method: 'POST', body: JSON.stringify(data) });
+
+// Allow createProgram with optional schoolIds (used by teacher flow)
+export const createProgramWithSchools = (data: {
+  name: string; subject: string; level: string; description: string; teachingMethod: string; schoolIds?: string[]
 }): Promise<LearningProgram> =>
   IS_MOCK
     ? Promise.reject(new Error('Not available in mock mode'))
@@ -200,3 +226,9 @@ export const updateMaterialsConfig = (schoolId: string, config: MaterialsConfig)
   IS_MOCK
     ? new Promise(r => setTimeout(r, 400))
     : apiFetch(`/api/admin/materials/${schoolId}`, { method: 'PUT', body: JSON.stringify(config) });
+
+export const getTeacherMaterials = (): Promise<any[]> =>
+  IS_MOCK ? Promise.resolve([]) : apiFetch('/api/teacher/materials');
+
+export const addTeacherMaterial = (data: { title: string; url: string; type?: string }): Promise<any> =>
+  IS_MOCK ? Promise.resolve({ id: 'm-mock', ...data }) : apiFetch('/api/teacher/materials', { method: 'POST', body: JSON.stringify(data) });

@@ -45,7 +45,8 @@ export async function handleGetPrograms(request: Request, env: Env): Promise<Res
 export async function handleCreateProgram(request: Request, env: Env): Promise<Response> {
 	const auth = await requireAuth(request, env);
 	if (auth instanceof Response) return auth;
-	if (!CREATE_ROLES.has(auth.role)) return err('Forbidden', 403, request);
+	// Allow admins and teachers (teachers may create programs for their assigned schools)
+	if (!CREATE_ROLES.has(auth.role) && auth.role !== 'teacher') return err('Forbidden', 403, request);
 
 	let body: { name?: unknown; subject?: unknown; level?: unknown; description?: unknown; teachingMethod?: unknown };
 	try {
@@ -59,6 +60,7 @@ export async function handleCreateProgram(request: Request, env: Env): Promise<R
 	const level          = typeof body.level === 'string'          ? body.level.trim()          : null;
 	const description    = typeof body.description === 'string'    ? body.description.trim()    : '';
 	const teachingMethod = typeof body.teachingMethod === 'string' ? body.teachingMethod.trim() : null;
+	const schoolIds = Array.isArray((body as any).schoolIds) ? (body as any).schoolIds.filter((x: any) => typeof x === 'string') : [];
 
 	if (!name)                                return err('name is required', 400, request);
 	if (!subject || !VALID_SUBJECTS.has(subject)) return err('subject must be english, maths, science, or bouldering', 400, request);
@@ -69,9 +71,17 @@ export async function handleCreateProgram(request: Request, env: Env): Promise<R
 	const createdAt = new Date().toISOString();
 
 	const db = getTursoClient(env);
+	// If a teacher is creating, ensure they only link to their assigned schools
+	let finalSchoolIds: string[] = [];
+	if (auth.role === 'teacher') {
+		const authSchoolIds = Array.isArray(auth.schoolIds) ? auth.schoolIds : [];
+		finalSchoolIds = schoolIds.filter((s: string) => authSchoolIds.includes(s));
+		if (finalSchoolIds.length === 0) return err('At least one valid schoolId is required for teacher-created programs', 400, request);
+	}
+	const schoolIdsJson = JSON.stringify(finalSchoolIds);
 	await db.execute(
 		'INSERT INTO programs (id, name, subject, level, description, material_sources, teaching_method, is_active, school_ids, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-		[id, name, subject, level, description, subject === 'bouldering' ? '["youtube"]' : '[]', teachingMethod, 1, '[]', createdAt],
+		[id, name, subject, level, description, subject === 'bouldering' ? '["youtube"]' : '[]', teachingMethod, 1, schoolIdsJson, createdAt],
 	);
 
 	return json({
@@ -79,7 +89,7 @@ export async function handleCreateProgram(request: Request, env: Env): Promise<R
 		materialSources: subject === 'bouldering' ? ['youtube'] : [],
 		teachingMethod,
 		isActive: true,
-		schoolIds: [],
+		schoolIds: finalSchoolIds,
 		createdAt,
 	}, 201, request);
 }

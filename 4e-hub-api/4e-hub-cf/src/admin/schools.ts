@@ -8,7 +8,8 @@ const CREATE_ROLES = new Set(['super_admin', 'district_admin']);
 export async function handleGetSchools(request: Request, env: Env): Promise<Response> {
 	const auth = await requireAuth(request, env);
 	if (auth instanceof Response) return auth;
-	if (!ADMIN_ROLES.has(auth.role)) return err('Forbidden', 403, request);
+	// allow teachers to list their assigned schools
+	if (!ADMIN_ROLES.has(auth.role) && auth.role !== 'teacher') return err('Forbidden', 403, request);
 
 	const db = getTursoClient(env);
 	let rows;
@@ -20,6 +21,17 @@ export async function handleGetSchools(request: Request, env: Env): Promise<Resp
 			'SELECT * FROM schools WHERE district_id = ? ORDER BY name',
 			[auth.districtId],
 		));
+	} else if (auth.role === 'teacher') {
+		// find schools linked to this teacher via teachers.school_ids
+		const { rows: tr } = await db.execute('SELECT school_ids FROM teachers WHERE user_id = ?', [auth.sub]);
+		const sids = tr[0] ? JSON.parse(tr[0].school_ids as string ?? '[]') : [];
+		if (sids.length === 0) { rows = []; }
+		else {
+			({ rows } = await db.execute(
+				`SELECT * FROM schools WHERE id IN (${sids.map(() => '?').join(',')}) ORDER BY name`,
+				sids,
+			));
+		}
 	} else {
 		// school_admin — only their own school
 		({ rows } = await db.execute(
@@ -46,10 +58,19 @@ export async function handleGetSchools(request: Request, env: Env): Promise<Resp
 export async function handleGetSchool(request: Request, env: Env, id: string): Promise<Response> {
 	const auth = await requireAuth(request, env);
 	if (auth instanceof Response) return auth;
-	if (!ADMIN_ROLES.has(auth.role)) return err('Forbidden', 403, request);
+	// allow teachers to view their assigned schools
+	if (!ADMIN_ROLES.has(auth.role) && auth.role !== 'teacher') return err('Forbidden', 403, request);
 
 	// school_admin can only view their own school
 	if (auth.role === 'school_admin' && auth.schoolId !== id) return err('Forbidden', 403, request);
+
+	// teacher can only view assigned schools
+	if (auth.role === 'teacher') {
+		const db = getTursoClient(env);
+		const { rows: tr } = await db.execute('SELECT school_ids FROM teachers WHERE user_id = ?', [auth.sub]);
+		const sids = tr[0] ? JSON.parse(tr[0].school_ids as string ?? '[]') : [];
+		if (!sids.includes(id)) return err('Forbidden', 403, request);
+	}
 
 	const db = getTursoClient(env);
 	const { rows } = await db.execute('SELECT * FROM schools WHERE id = ?', [id]);

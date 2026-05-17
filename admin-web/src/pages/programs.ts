@@ -1,4 +1,4 @@
-import { createProgram, getPrograms } from '../api.js';
+import { createProgram, createProgramWithSchools, getCurrentUser, getPrograms, getSchools } from '../api.js';
 import { esc } from '../escape.js';
 import { showToast } from '../main.js';
 import type { LearningProgram } from '../types.js';
@@ -91,6 +91,11 @@ function openAddProgramModal(): void {
         <textarea id="prog-desc" rows="3" placeholder="Brief description of the program…"
           style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:20px;outline:none;box-sizing:border-box;resize:vertical"></textarea>
 
+        <div id="prog-schools-wrap" style="margin-bottom:12px;display:none">
+          <label style="font-size:13px">Link to schools (multi-select)</label><br />
+          <select id="prog-schools" multiple style="width:100%;min-height:80px;margin-top:6px"></select>
+        </div>
+
         <div id="prog-form-error" role="alert" style="display:none;background:#FEF2F2;color:#DC2626;border-radius:6px;padding:10px 12px;font-size:13px;margin-bottom:16px"></div>
 
         <div style="display:flex;gap:10px;justify-content:flex-end">
@@ -132,7 +137,14 @@ function openAddProgramModal(): void {
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving…';
     try {
-      await createProgram({ name, subject, level, description, teachingMethod });
+      const current = getCurrentUser();
+      if (current?.role === 'teacher') {
+        const sel = modal.querySelector<HTMLSelectElement>('#prog-schools')!;
+        const schoolIds = Array.from(sel.selectedOptions).map(o => o.value);
+        await createProgramWithSchools({ name, subject, level, description, teachingMethod, schoolIds });
+      } else {
+        await createProgram({ name, subject, level, description, teachingMethod });
+      }
       modal.remove();
       showToast('Program created successfully');
       await renderPrograms();
@@ -142,6 +154,20 @@ function openAddProgramModal(): void {
       saveBtn.textContent = 'Save Program';
     }
   });
+
+  // If teacher, show schools multi-select populated with their schools
+  (async () => {
+    const current = getCurrentUser();
+    if (current?.role === 'teacher') {
+      const schools = await getSchools();
+      const sel = modal.querySelector<HTMLSelectElement>('#prog-schools')!;
+      sel.innerHTML = schools
+        .filter(s => (current.schoolIds ?? []).includes(s.id))
+        .map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`)
+        .join('');
+      (document.getElementById('prog-schools-wrap') as HTMLElement).style.display = 'block';
+    }
+  })();
 }
 
 function showFieldError(el: HTMLDivElement, msg: string): void {
