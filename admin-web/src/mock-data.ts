@@ -32,3 +32,20 @@ export const DEV_SYNC_STATUS: SyncStatus = {
   pendingChanges: 0,
   connectedApps: ['4E Admin', '4E Learn & Play', '4E In-Action'],
 };
+
+// ── In-Action mock data ─────────────────────────────────────────────────────
+export const DEV_CLASSES = [
+  { id: 'cls-001', name: 'Primary 1A', teacherId: 'teacher-001' },
+  { id: 'cls-002', name: 'Primary 2B', teacherId: 'teacher-001' },
+  { id: 'cls-003', name: 'Intermediate 3', teacherId: 'teacher-002' },
+  { id: 'cls-004', name: 'Class 4', teacherId: 'teacher-003' },
+  { id: 'cls-005', name: 'Class 5', teacherId: 'teacher-004' },
+];
+
+export const DEV_BROADCAST_SESSIONS = [
+  { id: 'bs-001', classId: 'cls-001', teacherId: 'teacher-001', startedAt: new Date().toISOString(), endedAt: null, message: 'Welcome' },
+];
+
+export const DEV_TEACHER_MEMOIR = [
+  { id: 'm-001', teacherId: 'teacher-001', studentId: 'student-001', note: 'Great participation today.', createdAt: new Date().toISOString() },
+];

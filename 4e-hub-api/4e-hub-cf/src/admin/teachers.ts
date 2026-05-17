@@ -1,5 +1,6 @@
 import { err, json } from '../lib/cors.ts';
 import { getTursoClient } from '../lib/db.ts';
+import { hashPassword } from '../lib/password.ts';
 import { requireAuth } from '../lib/require-auth.ts';
 
 const ADMIN_ROLES = new Set(['super_admin', 'district_admin', 'school_admin']);
@@ -38,4 +39,82 @@ export async function handleGetTeachers(request: Request, env: Env): Promise<Res
 	}));
 
 	return json(teachers, 200, request);
+}
+
+const CREATE_ROLES = new Set(['super_admin', 'district_admin', 'school_admin']);
+
+export async function handleCreateTeacher(request: Request, env: Env): Promise<Response> {
+	const auth = await requireAuth(request, env);
+	if (auth instanceof Response) return auth;
+	if (!CREATE_ROLES.has(auth.role)) return err('Forbidden', 403, request);
+
+	let body: { fullName?: unknown; email?: unknown; password?: unknown; schoolId?: unknown };
+	try {
+		body = (await request.json()) as typeof body;
+	} catch {
+		return err('Invalid JSON body', 400, request);
+	}
+
+	// Accept either a single schoolId or an array of schoolIds for multi-school assignment
+	const fullName = typeof body.fullName === 'string' ? body.fullName.trim() : null;
+	const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : null;
+	const password = typeof body.password === 'string' ? body.password : null;
+	const schoolId = typeof (body as any).schoolId === 'string' ? (body as any).schoolId : null;
+	const schoolIds = Array.isArray((body as any).schoolIds) ? (body as any).schoolIds as string[] : (schoolId ? [schoolId] : []);
+
+	if (!fullName) return err('fullName is required', 400, request);
+	if (!email) return err('email is required', 400, request);
+	if (!password) return err('password is required', 400, request);
+	if (schoolIds.length === 0) return err('schoolIds is required', 400, request);
+
+	const [firstName, ...rest] = fullName.split(' ');
+	const lastName = rest.join(' ') || '';
+
+	const db = getTursoClient(env);
+
+	// Validate all schoolIds exist and are within caller scope
+	for (const sid of schoolIds) {
+		const { rows: srows } = await db.execute('SELECT * FROM schools WHERE id = ?', [sid]);
+		if (!srows[0]) return err(`School not found: ${sid}`, 404, request);
+		const srow = srows[0];
+		if (auth.role === 'school_admin' && auth.schoolId !== sid) return err('Forbidden', 403, request);
+		if (auth.role === 'district_admin' && auth.districtId !== srow.district_id) return err('Forbidden', 403, request);
+	}
+
+	const userId = crypto.randomUUID();
+	const teacherId = crypto.randomUUID();
+	const createdAt = new Date().toISOString();
+	const passwordHash = hashPassword(password);
+
+	// Primary school is the first in the list for compatibility with existing fields
+	const primarySchool = schoolIds[0];
+
+	// Insert user (user.school_id = primarySchool)
+	await db.execute(
+		'INSERT INTO users (id, email, password_hash, role, school_id, district_id, tenant_id, first_name, last_name, avatar_url, graduation_year, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+		[userId, email, passwordHash, 'teacher', primarySchool, (await db.execute('SELECT district_id FROM schools WHERE id = ?', [primarySchool])).rows[0].district_id, auth.tenantId ?? (await db.execute('SELECT district_id FROM schools WHERE id = ?', [primarySchool])).rows[0].district_id, firstName, lastName, null, null, 1, createdAt],
+	);
+
+	// Insert teacher record — include school_ids JSON for multi-school support when available,
+	// otherwise fall back to existing schema (school_id only).
+	const { rows: pragmaRows } = await db.execute("PRAGMA table_info('teachers')");
+	const hasSchoolIds = pragmaRows.some((r: any) => r.name === 'school_ids');
+	if (hasSchoolIds) {
+		await db.execute(
+			'INSERT INTO teachers (id, user_id, school_id, class_ids, subject_areas, qualifications, created_at, school_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+			[teacherId, userId, primarySchool, '[]', '[]', null, createdAt, JSON.stringify(schoolIds)],
+		);
+	} else {
+		await db.execute(
+			'INSERT INTO teachers (id, user_id, school_id, class_ids, subject_areas, qualifications, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+			[teacherId, userId, primarySchool, '[]', '[]', null, createdAt],
+		);
+	}
+
+	// Increment teacher_count on each school
+	for (const sid of schoolIds) {
+		await db.execute('UPDATE schools SET teacher_count = IFNULL(teacher_count,0) + 1 WHERE id = ?', [sid]);
+	}
+
+	return json({ id: teacherId, userId, email, firstName, lastName, schoolIds, createdAt }, 201, request);
 }

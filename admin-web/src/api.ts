@@ -1,4 +1,4 @@
-import { DEV_LEARNERS, DEV_PROGRAMS, DEV_SCHOOLS, DEV_SYNC_STATUS, DEV_TEACHERS } from './mock-data.js';
+import { DEV_BROADCAST_SESSIONS, DEV_CLASSES, DEV_LEARNERS, DEV_PROGRAMS, DEV_SCHOOLS, DEV_SYNC_STATUS, DEV_TEACHER_MEMOIR, DEV_TEACHERS } from './mock-data.js';
 import type { LearningProgram, MaterialsConfig, School, Student, SyncStatus, Teacher } from './types.js';
 
 const API_URL = import.meta.env.VITE_API_URL as string | undefined;
@@ -91,10 +91,75 @@ export const getTeachers = (schoolId?: string): Promise<Teacher[]> => {
   return devOrFetch(mock, () => apiFetch(`/api/admin/teachers${schoolId ? `?schoolId=${schoolId}` : ''}`));
 };
 
+export const createTeacher = (data: { fullName: string; email: string; password: string; schoolIds: string[] }): Promise<any> =>
+  IS_MOCK
+    ? new Promise((resolve) => {
+        const id = `teacher-${String(Math.floor(Math.random()*900000)+100000)}`;
+        const userId = `user-${id}`;
+        const [firstSchool] = data.schoolIds;
+        DEV_TEACHERS.push({ id, userId, schoolId: firstSchool, classIds: [], subjectAreas: [] });
+        // bump school counts
+        for (const s of data.schoolIds) {
+          const sc = DEV_SCHOOLS.find(x => x.id === s);
+          if (sc) sc.teacherCount += 1;
+        }
+        resolve({ id, userId, email: data.email, schoolIds: data.schoolIds });
+      })
+    : apiFetch('/api/admin/teachers', { method: 'POST', body: JSON.stringify(data) });
+
+export const generateOnboardingToken = (data: { userId?: string; email?: string }): Promise<{ token: string }> =>
+  IS_MOCK
+    ? Promise.resolve({ token: 'mock-onboard-token' })
+    : apiFetch('/api/admin/teachers/onboard', { method: 'POST', body: JSON.stringify(data) });
+
+export const setOnboardPassword = (data: { token: string; password: string }): Promise<any> =>
+  IS_MOCK
+    ? Promise.resolve({ ok: true })
+    : apiFetch('/api/auth/onboard-set-password', { method: 'POST', body: JSON.stringify(data) });
+
 // ── Learners ──────────────────────────────────────────────────────────────────
 export const getLearners = (schoolId?: string): Promise<Student[]> => {
   const mock = schoolId ? DEV_LEARNERS.filter(s => s.schoolId === schoolId) : DEV_LEARNERS;
   return devOrFetch(mock, () => apiFetch(`/api/admin/learners${schoolId ? `?schoolId=${schoolId}` : ''}`));
+};
+
+// ── In-Action (teacher tools) ─────────────────────────────────────────────────
+export const getTeacherClasses = (teacherId: string): Promise<any[]> => {
+  const mock = DEV_CLASSES.filter(c => c.teacherId === teacherId);
+  return devOrFetch(mock, () => apiFetch(`/api/inaction/classes?teacherId=${teacherId}`));
+};
+
+export const getClassStudents = (classId: string): Promise<Student[]> => {
+  const mock = DEV_LEARNERS.filter(s => s.classIds.includes(classId));
+  return devOrFetch(mock, () => apiFetch(`/api/inaction/classes/${classId}/students`));
+};
+
+export const getBroadcastSessions = (teacherId?: string): Promise<any[]> => {
+  const mock = teacherId ? DEV_BROADCAST_SESSIONS.filter(b => b.teacherId === teacherId) : DEV_BROADCAST_SESSIONS;
+  return devOrFetch(mock, () => apiFetch(`/api/inaction/broadcasts${teacherId ? `?teacherId=${teacherId}` : ''}`));
+};
+
+export const startBroadcast = (classId: string, message: string): Promise<any> => {
+  if (IS_MOCK) {
+    const newB = { id: `bs-${String(Math.floor(Math.random()*900)+100)}`, classId, teacherId: 'unknown', startedAt: new Date().toISOString(), endedAt: null, message };
+    DEV_BROADCAST_SESSIONS.push(newB);
+    return Promise.resolve(newB);
+  }
+  return apiFetch('/api/inaction/broadcast/start', { method: 'POST', body: JSON.stringify({ classId, message }) });
+};
+
+export const getMemoirs = (teacherId: string, studentId?: string): Promise<any[]> => {
+  const mock = DEV_TEACHER_MEMOIR.filter(m => m.teacherId === teacherId && (!studentId || m.studentId === studentId));
+  return devOrFetch(mock, () => apiFetch(`/api/inaction/memoir?teacherId=${teacherId}${studentId ? `&studentId=${studentId}` : ''}`));
+};
+
+export const createMemoir = (data: { teacherId: string; studentId?: string; note: string }): Promise<any> => {
+  if (IS_MOCK) {
+    const newM = { id: `m-${String(Math.floor(Math.random()*900)+100)}`, ...data, createdAt: new Date().toISOString() };
+    DEV_TEACHER_MEMOIR.push(newM);
+    return Promise.resolve(newM);
+  }
+  return apiFetch('/api/inaction/memoir', { method: 'POST', body: JSON.stringify(data) });
 };
 
 // ── Sync ──────────────────────────────────────────────────────────────────────

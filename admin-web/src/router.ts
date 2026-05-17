@@ -1,5 +1,6 @@
 // ── Pages registry ────────────────────────────────────────────────────────────
 import { renderDashboard } from './pages/dashboard.js';
+import { renderInaction } from './pages/inaction.js';
 import { renderLearners } from './pages/learners.js';
 import { renderMaterials } from './pages/materials.js';
 import { renderPrograms } from './pages/programs.js';
@@ -8,7 +9,7 @@ import { renderSettings } from './pages/settings.js';
 import { renderSync } from './pages/sync.js';
 import { renderTeachers } from './pages/teachers.js';
 
-export type PageId = 'dashboard' | 'schools' | 'programs' | 'teachers' | 'learners' | 'materials' | 'sync' | 'settings';
+export type PageId = 'dashboard' | 'schools' | 'programs' | 'teachers' | 'inaction' | 'learners' | 'materials' | 'sync' | 'settings';
 
 export interface NavItem {
   id: PageId;
@@ -21,6 +22,7 @@ export const NAV_ITEMS: NavItem[] = [
   { id: 'schools',   label: 'Schools',   icon: '<i class="ph ph-buildings"></i>' },
   { id: 'programs',  label: 'Programs',  icon: '<i class="ph ph-books"></i>' },
   { id: 'teachers',  label: 'Teachers',  icon: '<i class="ph ph-chalkboard-teacher"></i>' },
+  { id: 'inaction',  label: 'In-Action',  icon: '<i class="ph ph-lightning"></i>' },
   { id: 'learners',  label: 'Learners',  icon: '<i class="ph ph-graduation-cap"></i>' },
   { id: 'materials', label: 'Materials', icon: '<i class="ph ph-folder-open"></i>' },
   { id: 'sync',      label: 'Sync',      icon: '<i class="ph ph-arrows-clockwise"></i>' },
@@ -32,6 +34,7 @@ const PAGE_RENDERERS: Record<PageId, () => Promise<void>> = {
   schools:   renderSchools,
   programs:  renderPrograms,
   teachers:  renderTeachers,
+  inaction:  renderInaction,
   learners:  renderLearners,
   materials: renderMaterials,
   sync:      renderSync,

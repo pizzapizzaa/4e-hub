@@ -252,6 +252,12 @@ function showLoginPage(): void {
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 (async function init() {
+  // If user is opening the onboarding link, render onboarding page (public)
+  if (location.pathname.startsWith('/onboard')) {
+    const { renderOnboard } = await import('./pages/onboard.js');
+    renderOnboard();
+    return;
+  }
   if (IS_MOCK) {
     // Dev / mock mode — no auth required
     startApp();

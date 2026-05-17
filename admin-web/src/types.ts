@@ -32,6 +32,7 @@ export interface Teacher {
   id: string;
   userId: string;
   schoolId: string;
+  schoolIds?: string[];
   classIds: string[];
   subjectAreas: Subject[];
   qualifications?: string;
