@@ -1,4 +1,4 @@
-import { createSchool, getCurrentUserEmail, getSchools, updateSchool } from '../api.js';
+import { createSchool, getCurrentUser, getSchools, updateSchool } from '../api.js';
 import { esc } from '../escape.js';
 import { showToast } from '../main.js';
 import type { School } from '../types.js';
@@ -7,7 +7,7 @@ export async function renderSchools(): Promise<void> {
   const content = document.getElementById('content')!;
   const schools  = await getSchools();
 
-  const currentUserEmail = getCurrentUserEmail();
+  const currentUser = getCurrentUser();
 
   content.innerHTML = `
     <div class="list-header">
@@ -29,7 +29,7 @@ export async function renderSchools(): Promise<void> {
               </tr>
             </thead>
             <tbody>
-              ${schools.map(s => schoolRow(s, currentUserEmail)).join('')}
+              ${schools.map(s => schoolRow(s, currentUser)).join('')}
             </tbody>
           </table>
         </div>`
@@ -229,11 +229,11 @@ function showFieldError(el: HTMLDivElement, msg: string): void {
   el.style.display = 'block';
 }
 
-function schoolRow(s: School, currentUserEmail: string | null): string {
+function schoolRow(s: School, currentUser: { email?: string; role?: string; userId?: string; schoolIds?: string[] } | null): string {
   const badge = s.isActive
     ? '<span class="badge badge-green">Active</span>'
     : '<span class="badge badge-gray">Inactive</span>';
-  const canEdit = currentUserEmail === '4e-admin@proton.me';
+  const canEdit = currentUser?.role === 'super_admin' || currentUser?.email === '4e-admin@proton.me';
   const editBtn = canEdit ? `<button class="btn" data-action="edit" data-id="${esc(s.id)}">Edit</button>` : '';
   return `<tr data-id="${esc(s.id)}">
     <td style="font-weight:600">${esc(s.name)}</td>
