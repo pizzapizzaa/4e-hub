@@ -109,3 +109,49 @@ export async function handleCreateSchool(request: Request, env: Env): Promise<Re
 		createdAt,
 	}, 201, request);
 }
+
+export async function handleUpdateSchool(request: Request, env: Env, id: string): Promise<Response> {
+	const auth = await requireAuth(request, env);
+	if (auth instanceof Response) return auth;
+	// Only super_admins may update schools
+	if (auth.role !== 'super_admin') return err('Forbidden', 403, request);
+
+	let body: { name?: unknown; address?: unknown; districtId?: unknown; isActive?: unknown };
+	try {
+		body = (await request.json()) as typeof body;
+	} catch {
+		return err('Invalid JSON body', 400, request);
+	}
+
+	const name       = typeof body.name === 'string'       ? body.name.trim()       : null;
+	const address    = typeof body.address === 'string'    ? body.address.trim()    : null;
+	const districtId = typeof body.districtId === 'string' ? body.districtId.trim() : null;
+	const isActive   = typeof body.isActive === 'boolean'  ? (body.isActive ? 1 : 0) : null;
+
+	if (!name)       return err('name is required', 400, request);
+	if (!districtId) return err('districtId is required', 400, request);
+
+	const db = getTursoClient(env);
+	// Update fields provided
+	await db.execute(
+		'UPDATE schools SET name = ?, address = ?, district_id = ?, is_active = ? WHERE id = ?',
+		[name, address ?? '', districtId, isActive ?? 1, id],
+	);
+
+	// Return updated school
+	const { rows } = await db.execute('SELECT * FROM schools WHERE id = ?', [id]);
+	if (!rows[0]) return err('School not found', 404, request);
+	const r = rows[0];
+
+	return json({
+		id:           r.id,
+		districtId:   r.district_id,
+		name:         r.name,
+		address:      r.address ?? '',
+		adminIds:     JSON.parse(r.admin_ids as string ?? '[]'),
+		teacherCount: r.teacher_count ?? 0,
+		studentCount: r.student_count ?? 0,
+		isActive:     r.is_active === 1,
+		createdAt:    r.created_at,
+	}, 200, request);
+}

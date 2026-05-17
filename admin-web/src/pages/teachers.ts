@@ -61,6 +61,11 @@ export async function renderTeachers(): Promise<void> {
   // Wire create teacher UI
   const btn = document.getElementById('create-teacher-btn') as HTMLButtonElement | null;
   const form = document.getElementById('create-teacher-form') as HTMLDivElement | null;
+  // If dashboard requested the create form, show it and clear the flag
+  if (form && sessionStorage.getItem('open_create_teacher')) {
+    form.style.display = 'block';
+    sessionStorage.removeItem('open_create_teacher');
+  }
   if (btn && form) {
     btn.addEventListener('click', () => { form.style.display = form.style.display === 'none' ? 'block' : 'none'; });
     const cancel = document.getElementById('ct-cancel') as HTMLButtonElement;

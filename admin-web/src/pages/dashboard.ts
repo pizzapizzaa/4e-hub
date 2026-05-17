@@ -29,6 +29,7 @@ export async function renderDashboard(): Promise<void> {
         <div class="stat-icon" style="color:#FACC15"><i class="ph ph-chalkboard-teacher"></i></div>
         <div class="stat-value" style="color:#FACC15">${teachers.length}</div>
         <div class="stat-label">Teachers</div>
+        <button id="dashboard-create-teacher" class="btn" style="margin-top:8px">Create</button>
       </div>
       <div class="stat-card" style="border-top-color:#F97316">
         <div class="stat-icon" style="color:#F97316"><i class="ph ph-graduation-cap"></i></div>
@@ -49,4 +50,16 @@ export async function renderDashboard(): Promise<void> {
           ${sync.connectedApps.map(a => `<span class="badge badge-green">${a}</span>`).join('')}
         </div>` : ''}
     </div>`;
+
+  // Dashboard create teacher button behavior: set flag and navigate to Teachers
+  const dashCreate = document.getElementById('dashboard-create-teacher');
+  if (dashCreate) {
+    dashCreate.addEventListener('click', () => {
+      try { sessionStorage.setItem('open_create_teacher', '1'); } catch {}
+      // find sidebar nav button for Teachers and click it
+      const sidebarBtn = Array.from(document.querySelectorAll('#sidebar-nav button')).find(b => (b.textContent || '').trim().startsWith('Teachers')) as HTMLButtonElement | undefined;
+      if (sidebarBtn) sidebarBtn.click();
+      else location.hash = '#teachers';
+    });
+  }
 }

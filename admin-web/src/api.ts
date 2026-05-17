@@ -75,6 +75,24 @@ export const createSchool = (data: { name: string; address: string; districtId: 
     ? Promise.reject(new Error('Not available in mock mode'))
     : apiFetch('/api/admin/schools', { method: 'POST', body: JSON.stringify(data) });
 
+export const updateSchool = (id: string, data: { name?: string; address?: string; districtId?: string; isActive?: boolean }): Promise<School> =>
+  IS_MOCK
+    ? Promise.reject(new Error('Not available in mock mode'))
+    : apiFetch(`/api/admin/schools/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+
+export function getCurrentUserEmail(): string | null {
+  const token = sessionStorage.getItem('access_token');
+  if (!token) return null;
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+    return typeof payload.email === 'string' ? payload.email : null;
+  } catch {
+    return null;
+  }
+}
+
 // ── Programs ──────────────────────────────────────────────────────────────────
 export const getPrograms = (): Promise<LearningProgram[]> => devOrFetch(DEV_PROGRAMS, () => apiFetch('/api/admin/programs'));
 export const createProgram = (data: {
