@@ -8,6 +8,7 @@
   --yellow:  #FACC15;
   --bg:      #F5F7FA;
   --card:    #FFFFFF;
+  --page-bg: #ffec4b;
   --text:    #1F2937;
   --muted:   #6B7280;
   --border:  #E5E7EB;
@@ -268,4 +269,14 @@ body {
 @media (max-width: 480px) {
   .data-table th:nth-child(n+4),
   .data-table td:nth-child(n+4) { display: none; }
+}
+
+/* Login page overrides to match site background */
+#login-page {
+  background: var(--page-bg);
+}
+#login-page > div {
+  background: var(--page-bg) !important;
+  box-shadow: none !important;
+  border-radius: var(--radius) !important;
 }
