@@ -28,7 +28,13 @@ export default {
 
 async function handleRequest(request: Request, env: Env): Promise<Response> {
 		const { method, url } = request;
-		const { pathname } = new URL(url);
+		let { pathname } = new URL(url);
+
+		// Normalize pathname by removing a single trailing slash (except for root)
+		// This avoids accidental 404s when clients include trailing slashes.
+		if (pathname.length > 1 && pathname.endsWith('/')) {
+			pathname = pathname.slice(0, -1);
+		}
 
 		// CORS preflight
 		if (method === 'OPTIONS') return preflight(request);
