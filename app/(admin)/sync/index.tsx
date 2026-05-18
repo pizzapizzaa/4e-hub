@@ -33,7 +33,7 @@ export default function SyncScreen() {
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.heading}>App Sync</Text>
       <Text style={styles.subtitle}>
-        Sync data between 4E Admin, 4E Learn & Play, and 4E In-Action.
+        Manage syncing data between 4E Admin, 4E Learn & Play, and 4E In-Action.
       </Text>
 
       {loading
