@@ -10,6 +10,7 @@
   --card:    #FFFFFF;
   --page-bg: #ffec4b;
   --text:    #1F2937;
+  --danger:  #DC2626;
   --muted:   #6B7280;
   --border:  #E5E7EB;
   --sidebar: 240px;
@@ -279,3 +280,23 @@ body {
   box-shadow: none !important;
   border-radius: var(--radius) !important;
 }
+
+/* Shared form styles */
+.form {
+  display: block;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.form-row { display:flex; gap:8px; flex-wrap:wrap; }
+.form-group { flex:1; min-width:180px; }
+.form-label { font-size:13px; font-weight:600; color:var(--muted); display:block; margin-bottom:6px }
+.form-input, .form-select {
+  width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:14px; outline:none;
+  background: #fff;
+}
+.form-select { min-height:80px; }
+.form-error { color:var(--danger); font-size:12px; height:16px; margin-top:6px }
+.form-actions { margin-top:8px; display:flex; align-items:center; gap:8px }
