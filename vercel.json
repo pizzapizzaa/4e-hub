@@ -10,8 +10,9 @@
   ]
   ,
   "routes": [
+    { "src": "/assets/(.*)", "dest": "/admin-web/assets/$1" },
+    { "src": "^/$", "dest": "/admin-web/index.html" },
     { "handle": "filesystem" },
-    { "src": "^/$", "status": 302, "dest": "/admin-web/" },
-    { "src": "/(.*)", "dest": "/admin-web/index.html" }
+    { "src": "\/(.*)", "dest": "/admin-web/index.html" }
   ]
 }
