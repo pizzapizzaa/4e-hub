@@ -199,7 +199,7 @@ export const getMemoirs = (teacherId: string, studentId?: string): Promise<any[]
 
 export const createMemoir = (data: { teacherId: string; studentId?: string; note: string }): Promise<any> => {
   if (IS_MOCK) {
-    const newM = { id: `m-${String(Math.floor(Math.random()*900)+100)}`, ...data, createdAt: new Date().toISOString() };
+    const newM = { id: `m-${String(Math.floor(Math.random()*900)+100)}`, teacherId: data.teacherId, studentId: data.studentId ?? '', note: data.note, createdAt: new Date().toISOString() };
     DEV_TEACHER_MEMOIR.push(newM);
     return Promise.resolve(newM);
   }
