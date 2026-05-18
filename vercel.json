@@ -11,6 +11,7 @@
   ,
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "^/$", "status": 302, "dest": "/admin-web/" },
+    { "src": "/(.*)", "dest": "/admin-web/index.html" }
   ]
 }
