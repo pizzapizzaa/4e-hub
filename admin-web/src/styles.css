@@ -8,7 +8,7 @@
   --yellow:  #FACC15;
   --bg:      #F5F7FA;
   --card:    #FFFFFF;
-  --page-bg: #ffec4b;
+  --login-page-bg: #ffec4b;
   --text:    #1F2937;
   --danger:  #DC2626;
   --muted:   #6B7280;
@@ -273,10 +273,10 @@ body {
 
 /* Login page overrides to match site background */
 #login-page {
-  background: var(--page-bg);
+  background: var(--login-page-bg);
 }
 #login-page > div {
-  background: var(--page-bg) !important;
+  background: var(--login-page-bg) !important;
   box-shadow: none !important;
   border-radius: var(--radius) !important;
 }
