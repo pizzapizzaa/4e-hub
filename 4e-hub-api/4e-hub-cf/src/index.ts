@@ -60,6 +60,12 @@ async function handleRequest(request: Request, env: Env): Promise<Response> {
 					if (method === 'GET') return handleGetSchool(request, env, id);
 					if (method === 'PUT') return handleUpdateSchool(request, env, id);
 				}
+		// Teacher update
+		const teacherMatch = pathname.match(/^\/api\/admin\/teachers\/(?<id>[^/]+)$/);
+		if (teacherMatch && method === 'PUT') {
+			const id = teacherMatch.groups?.id as string;
+			return (await import('./admin/teachers.ts')).handleUpdateTeacher(request, env, id);
+		}
 		if (method === 'GET'  && pathname === '/api/admin/programs')          return handleGetPrograms(request, env);
 		if (method === 'POST' && pathname === '/api/admin/programs')          return handleCreateProgram(request, env);
 		if (method === 'GET'  && pathname === '/api/admin/teachers')          return handleGetTeachers(request, env);

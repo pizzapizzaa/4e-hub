@@ -1,15 +1,15 @@
 // ── Main entry ────────────────────────────────────────────────────────────────
 import {
-    IS_MOCK,
-    attemptTokenRefresh,
-    clearAuth,
-    getCurrentUser,
-    getRefreshToken,
-    getToken,
-    isTokenExpired,
-    setExpiresAt,
-    setRefreshToken,
-    setToken,
+  IS_MOCK,
+  attemptTokenRefresh,
+  clearAuth,
+  getCurrentUser,
+  getRefreshToken,
+  getToken,
+  isTokenExpired,
+  setExpiresAt,
+  setRefreshToken,
+  setToken,
 } from './api.js';
 import { NAV_ITEMS, getPageRenderer, type PageId } from './router.js';
 
@@ -188,22 +188,15 @@ function showLoginPage(): void {
         background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
         padding:40px 36px;width:100%;max-width:380px;
       ">
-        <h1 style="font-size:20px;font-weight:800;color:var(--green);margin-bottom:4px">4E Global</h1>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:28px">Admin Portal — Sign in</p>
+        <h1 class="mb-4 text-lg fw-800 text-green">4E Global</h1>
+        <p class="mb-28 text-sm text-muted">Admin Portal — Sign in</p>
         <form id="login-form" novalidate>
-          <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="login-email">Email</label>
-          <input id="login-email" type="email" required autocomplete="username"
-            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:16px;outline:none" />
-          <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="login-password">Password</label>
-          <input id="login-password" type="password" required autocomplete="current-password"
-            style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:20px;outline:none" />
-          <div id="login-error" role="alert" style="
-            display:none;background:#FEF2F2;color:#DC2626;border-radius:6px;
-            padding:10px 12px;font-size:13px;margin-bottom:16px;
-          "></div>
-          <button type="submit" id="login-submit" class="btn btn-orange" style="
-            width:100%;font-size:15px;
-          ">Sign in</button>
+          <label class="form-label" for="login-email">Email</label>
+          <input id="login-email" type="email" required autocomplete="username" class="form-input" />
+          <label class="form-label" for="login-password">Password</label>
+          <input id="login-password" type="password" required autocomplete="current-password" class="form-input" />
+          <div id="login-error" role="alert" class="text-sm text-danger" style="display:none;background:#FEF2F2;border-radius:6px;padding:10px 12px;margin-bottom:16px"></div>
+          <button type="submit" id="login-submit" class="btn btn-orange btn-block">Sign in</button>
         </form>
       </div>
     </div>`;

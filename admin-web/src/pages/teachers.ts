@@ -1,5 +1,6 @@
-import { createTeacher, generateOnboardingToken, getSchools, getTeachers } from '../api.js';
+import { createTeacher, generateOnboardingToken, getSchools, getTeachers, updateTeacher } from '../api.js';
 import { esc } from '../escape.js';
+import { showToast } from '../main.js';
 import type { Teacher } from '../types.js';
 
 export async function renderTeachers(): Promise<void> {
@@ -10,9 +11,9 @@ export async function renderTeachers(): Promise<void> {
   content.innerHTML = `
     <div class="list-header">
       <h2>Teachers</h2>
-      <button id="create-teacher-btn" class="btn btn-primary" style="margin-left:auto">Create Teacher</button>
+      <button id="create-teacher-btn" class="btn btn-primary ml-auto">Create Teacher</button>
     </div>
-    <div id="create-teacher-form" class="form" style="display:none;margin:16px 0">
+    <div id="create-teacher-form" class="form my-16" style="display:none">
       <div class="form-row">
         <div class="form-group">
           <input id="ct-fullname" class="form-input" placeholder="Full name" />
@@ -27,7 +28,7 @@ export async function renderTeachers(): Promise<void> {
           <div id="ct-password-err" class="form-error"></div>
         </div>
       </div>
-      <div style="margin-top:8px">
+      <div class="mt-8">
         <label class="form-label">Assign to schools (multi-select)</label>
         <select id="ct-schools" multiple class="form-select">
           ${schools.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}
@@ -36,7 +37,7 @@ export async function renderTeachers(): Promise<void> {
       <div class="form-actions">
         <button id="ct-submit" class="btn btn-green">Create</button>
         <button id="ct-cancel" class="btn" type="button">Cancel</button>
-        <div id="ct-error" class="form-error" style="margin-top:8px"></div>
+        <div id="ct-error" class="form-error mt-8"></div>
       </div>
     </div>
     ${teachers.length === 0
@@ -45,11 +46,12 @@ export async function renderTeachers(): Promise<void> {
           <table class="data-table">
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Subjects</th>
-                <th>Classes</th>
-                <th>School</th>
-              </tr>
+                    <th>ID</th>
+                    <th>Subjects</th>
+                    <th>Classes</th>
+                    <th>School</th>
+                    <th>Actions</th>
+                  </tr>
             </thead>
             <tbody>
               ${teachers.map(t => teacherRow(t)).join('')}
@@ -119,19 +121,124 @@ export async function renderTeachers(): Promise<void> {
 
 function teacherRow(t: Teacher): string {
   const subjects = t.subjectAreas
-    .map(s => `<span class="badge badge-green" style="margin-right:4px">${esc(s)}</span>`)
+    .map(s => `<span class="badge badge-green mr-4">${esc(s)}</span>`)
     .join('');
   return `<tr data-id="${esc(t.id)}">
     <td>
-      <div style="display:flex;align-items:center;gap:10px">
-        <div style="width:38px;height:38px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">
+      <div class="d-flex items-center gap-10">
+        <div class="fw-700 text-sm" style="width:38px;height:38px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center;flex-shrink:0">
           ${esc(t.id.slice(0, 2).toUpperCase())}
         </div>
-        <span style="font-weight:600">Teacher ${esc(t.id.slice(8, 12))}</span>
+        <span class="fw-700">Teacher ${esc(t.id.slice(8, 12))}</span>
       </div>
     </td>
     <td>${subjects}</td>
     <td>${esc(t.classIds.length)}</td>
-    <td style="color:var(--muted);font-size:13px">${esc((t.schoolIds && t.schoolIds.length) ? t.schoolIds.join(', ') : t.schoolId)}</td>
+    <td class="text-sm text-muted">${esc((t.schoolIds && t.schoolIds.length) ? t.schoolIds.join(', ') : t.schoolId)}</td>
+    <td>
+      <button class="btn" data-action="edit" data-id="${esc(t.id)}">Edit</button>
+    </td>
   </tr>`;
 }
+
+  // Handle edit actions (modal-based editor)
+  const table = content.querySelector('table.data-table tbody');
+  if (table) {
+    table.addEventListener('click', async (ev) => {
+      const target = ev.target as HTMLElement;
+      const btn = target.closest('button[data-action="edit"]') as HTMLButtonElement | null;
+      if (!btn) return;
+      const tid = btn.dataset.id as string;
+      const teacher = teachers.find(t => t.id === tid);
+      if (!teacher) return alert('Teacher not found');
+
+      // Open modal
+      openEditTeacherModal(teacher);
+    });
+  }
+
+  function openEditTeacherModal(teacher: Teacher): void {
+    document.getElementById('edit-teacher-modal')?.remove();
+    const modal = document.createElement('div');
+    modal.id = 'edit-teacher-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML = `
+      <div style="background:var(--card);border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,0,0,.18);width:100%;max-width:520px;padding:24px;position:relative;">
+        <h3 class="mb-12">Edit Teacher</h3>
+        <form id="edit-teacher-form" novalidate>
+          <label class="form-label" for="et-fullname">Full name</label>
+          <input id="et-fullname" class="form-input" />
+
+          <label class="form-label" for="et-email">Email</label>
+          <input id="et-email" class="form-input" type="email" />
+
+          <label class="form-label" for="et-subjects">Subject areas (comma separated)</label>
+          <input id="et-subjects" class="form-input" />
+
+          <label class="form-label" for="et-quals">Qualifications</label>
+          <textarea id="et-quals" class="form-input" style="min-height:80px"></textarea>
+
+          <label class="form-label" style="white-space:nowrap">Assign to schools (multi-select)</label>
+          <select id="et-schools" multiple class="form-select">
+            ${schools.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}
+          </select>
+
+          <div id="et-error" class="form-error mt-8"></div>
+
+          <div class="form-actions">
+            <button type="submit" id="et-save" class="btn btn-green">Save</button>
+            <button type="button" id="et-cancel" class="btn">Cancel</button>
+          </div>
+        </form>
+      </div>`;
+    document.body.appendChild(modal);
+
+    const form = modal.querySelector<HTMLFormElement>('#edit-teacher-form')!;
+    const nameIn = modal.querySelector<HTMLInputElement>('#et-fullname')!;
+    const emailIn = modal.querySelector<HTMLInputElement>('#et-email')!;
+    const subjectsIn = modal.querySelector<HTMLInputElement>('#et-subjects')!;
+    const qualsIn = modal.querySelector<HTMLTextAreaElement>('#et-quals')!;
+    const schoolsSel = modal.querySelector<HTMLSelectElement>('#et-schools')!;
+    const errBox = modal.querySelector<HTMLDivElement>('#et-error')!;
+    const cancelBtn = modal.querySelector<HTMLButtonElement>('#et-cancel')!;
+
+    // Prefill
+    nameIn.value = teacher.fullName ?? '';
+    emailIn.value = teacher.email ?? '';
+    subjectsIn.value = (teacher.subjectAreas || []).join(', ');
+    qualsIn.value = teacher.qualifications ?? '';
+    if (teacher.schoolIds && teacher.schoolIds.length) {
+      for (const opt of Array.from(schoolsSel.options)) {
+        if (teacher.schoolIds.includes(opt.value)) opt.selected = true;
+      }
+    } else if (teacher.schoolId) {
+      for (const opt of Array.from(schoolsSel.options)) {
+        if (opt.value === teacher.schoolId) opt.selected = true;
+      }
+    }
+
+    // Close handlers
+    modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+    cancelBtn.addEventListener('click', () => modal.remove());
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errBox.textContent = '';
+      const fullName = nameIn.value.trim();
+      const email = emailIn.value.trim();
+      const subjectAreas = subjectsIn.value.split(',').map(s => s.trim()).filter(Boolean);
+      const qualifications = qualsIn.value.trim() === '' ? null : qualsIn.value.trim();
+      const selectedSchoolIds = Array.from(schoolsSel.selectedOptions).map(o => o.value);
+
+      const payload: any = { fullName, email, subjectAreas, qualifications, schoolIds: selectedSchoolIds };
+
+      try {
+        await updateTeacher(teacher.id, payload);
+        modal.remove();
+        showToast('Teacher updated');
+        await renderTeachers();
+      } catch (err) {
+        errBox.textContent = err instanceof Error ? err.message : String(err);
+      }
+    });
+  }

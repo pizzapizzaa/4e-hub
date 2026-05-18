@@ -151,6 +151,11 @@ export const createTeacher = (data: { fullName: string; email: string; password:
       })
     : apiFetch('/api/admin/teachers', { method: 'POST', body: JSON.stringify(data) });
 
+  export const updateTeacher = (id: string, data: { fullName?: string; email?: string; schoolIds?: string[]; subjectAreas?: string[]; qualifications?: string }): Promise<any> =>
+    IS_MOCK
+      ? Promise.reject(new Error('Not available in mock mode'))
+      : apiFetch(`/api/admin/teachers/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+
 export const generateOnboardingToken = (data: { userId?: string; email?: string }): Promise<{ token: string }> =>
   IS_MOCK
     ? Promise.resolve({ token: 'mock-onboard-token' })

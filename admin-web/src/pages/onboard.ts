@@ -7,19 +7,19 @@ export async function renderOnboard(): Promise<void> {
   document.title = 'Onboarding — 4E';
   const root = document.getElementById('content')!;
   root.innerHTML = `
-    <div style="max-width:480px;margin:40px auto;padding:24px;background:var(--card);border-radius:10px">
-      <h2 style="margin-bottom:8px">Set your password</h2>
-      <p style="color:var(--muted);margin-bottom:12px">Enter a secure password to finish onboarding.</p>
-      <div style="margin-bottom:8px">
-        <label style="display:block;font-size:13px">Onboarding token</label>
-        <input id="onb-token" value="${tokenFromQuery}" style="width:100%;padding:10px;margin-top:6px" />
+    <div class="card mx-auto my-40 p-24" style="max-width:480px">
+      <h2 class="mb-8">Set your password</h2>
+      <p class="mb-12 text-muted">Enter a secure password to finish onboarding.</p>
+      <div class="mb-8">
+        <label class="form-label">Onboarding token</label>
+        <input id="onb-token" value="${tokenFromQuery}" class="form-input" />
       </div>
-      <div style="margin-bottom:8px">
-        <label style="display:block;font-size:13px">New password</label>
-        <input id="onb-password" type="password" style="width:100%;padding:10px;margin-top:6px" />
+      <div class="mb-8">
+        <label class="form-label">New password</label>
+        <input id="onb-password" type="password" class="form-input" />
       </div>
-      <div id="onb-error" style="color:var(--danger);min-height:18px;margin-bottom:8px"></div>
-      <div>
+      <div id="onb-error" class="mb-8 text-danger" style="min-height:18px"></div>
+      <div class="form-actions">
         <button id="onb-submit" class="btn btn-orange">Set password</button>
       </div>
     </div>`;

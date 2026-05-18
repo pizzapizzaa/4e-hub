@@ -9,10 +9,10 @@ export async function renderSync(): Promise<void> {
   const lastSync = status.lastSyncedAt ? new Date(status.lastSyncedAt).toLocaleString() : 'Never';
 
   content.innerHTML = `
-    <div class="list-header" style="margin-bottom:16px">
+    <div class="list-header mb-16">
       <h2>App Sync</h2>
     </div>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:20px">
+    <p class="mb-20 text-muted text-md">
       Sync data between 4E Admin, 4E Learn &amp; Play, and 4E In-Action.
     </p>
 
@@ -22,8 +22,8 @@ export async function renderSync(): Promise<void> {
         <div class="sync-dot${status.isPending ? ' pending' : ''}"></div>
         <span>${status.isPending ? 'Sync in progress…' : 'All apps up to date'}</span>
       </div>
-      <div style="font-size:13px;color:var(--muted);margin-top:6px">Last synced: ${esc(lastSync)}</div>
-      ${status.pendingChanges > 0 ? `<div style="font-size:13px;color:var(--orange);margin-top:4px">${esc(status.pendingChanges)} pending change(s)</div>` : ''}
+      <div class="mt-6 text-sm text-muted">Last synced: ${esc(lastSync)}</div>
+      ${status.pendingChanges > 0 ? `<div class="mt-4 text-sm text-orange">${esc(status.pendingChanges)} pending change(s)</div>` : ''}
     </div>
 
     ${status.connectedApps.length ? `
@@ -32,11 +32,11 @@ export async function renderSync(): Promise<void> {
         ${status.connectedApps.map(a => `
           <div class="sync-row">
             <div class="sync-dot"></div>
-            <span style="font-size:15px">${esc(a)}</span>
+            <span class="text-md">${esc(a)}</span>
           </div>`).join('')}
       </div>` : ''}
 
-    <button class="btn btn-green" id="sync-btn" style="margin-top:8px;padding:14px 28px;font-size:15px;width:100%;max-width:320px">
+    <button class="btn btn-green btn-block mt-8" id="sync-btn">
       Trigger Manual Sync
     </button>`;
 

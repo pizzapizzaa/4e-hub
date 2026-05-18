@@ -25,14 +25,14 @@ export async function renderSettings(): Promise<void> {
   }
 
   content.innerHTML = `
-    <div class="list-header" style="margin-bottom:8px">
+    <div class="list-header mb-8">
       <h2>Settings</h2>
     </div>
-    <p style="color:var(--muted);font-size:14px;margin-bottom:20px">
+    <p class="mb-20 text-muted text-md">
       Set the default teaching approach for this school.
     </p>
     <div id="method-list">${buildCards()}</div>
-    <button class="btn btn-green" id="save-settings-btn" style="margin-top:8px;padding:14px 28px;font-size:15px;width:100%;max-width:320px">
+    <button class="btn btn-green btn-block mt-8" id="save-settings-btn">
       Save Settings
     </button>`;
 

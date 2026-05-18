@@ -57,15 +57,13 @@ function openAddProgramModal(): void {
       background:var(--card);border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,0,0,.18);
       width:100%;max-width:460px;padding:32px 28px;position:relative;max-height:90dvh;overflow-y:auto;
     ">
-      <h3 style="font-size:17px;font-weight:800;margin-bottom:20px">New Program</h3>
+      <h3 class="mb-20 text-lg fw-800">New Program</h3>
       <form id="add-program-form" novalidate>
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="prog-name">Program Name *</label>
-        <input id="prog-name" type="text" required placeholder="e.g. Foundation English"
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:14px;outline:none;box-sizing:border-box" />
+        <label class="form-label" for="prog-name">Program Name *</label>
+        <input id="prog-name" type="text" required placeholder="e.g. Foundation English" class="form-input" />
 
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="prog-subject">Subject *</label>
-        <select id="prog-subject" required
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:14px;outline:none;box-sizing:border-box;background:#fff">
+        <label class="form-label" for="prog-subject">Subject *</label>
+        <select id="prog-subject" required class="form-select">
           <option value="">Select subject…</option>
           <option value="english">English</option>
           <option value="maths">Maths</option>
@@ -73,13 +71,11 @@ function openAddProgramModal(): void {
           <option value="bouldering">Bouldering</option>
         </select>
 
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="prog-level">Level *</label>
-        <input id="prog-level" type="text" required placeholder="e.g. beginner, intermediate, JSS1"
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:14px;outline:none;box-sizing:border-box" />
+        <label class="form-label" for="prog-level">Level *</label>
+        <input id="prog-level" type="text" required placeholder="e.g. beginner, intermediate, JSS1" class="form-input" />
 
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="prog-method">Teaching Method *</label>
-        <select id="prog-method" required
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:14px;outline:none;box-sizing:border-box;background:#fff">
+        <label class="form-label" for="prog-method">Teaching Method *</label>
+        <select id="prog-method" required class="form-select">
           <option value="">Select method…</option>
           <option value="direct_instruction">Direct Instruction</option>
           <option value="inquiry_based">Inquiry Based</option>
@@ -87,19 +83,18 @@ function openAddProgramModal(): void {
           <option value="blended">Blended</option>
         </select>
 
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="prog-desc">Description</label>
-        <textarea id="prog-desc" rows="3" placeholder="Brief description of the program…"
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:20px;outline:none;box-sizing:border-box;resize:vertical"></textarea>
+        <label class="form-label" for="prog-desc">Description</label>
+        <textarea id="prog-desc" rows="3" placeholder="Brief description of the program…" class="form-input" style="resize:vertical"></textarea>
 
-        <div id="prog-schools-wrap" style="margin-bottom:12px;display:none">
-          <label style="font-size:13px">Link to schools (multi-select)</label><br />
-          <select id="prog-schools" multiple style="width:100%;min-height:80px;margin-top:6px"></select>
+        <div id="prog-schools-wrap" class="mb-12" style="display:none">
+          <label class="text-sm">Link to schools (multi-select)</label><br />
+          <select id="prog-schools" multiple class="form-select mt-6" style="min-height:80px"></select>
         </div>
 
-        <div id="prog-form-error" role="alert" style="display:none;background:#FEF2F2;color:#DC2626;border-radius:6px;padding:10px 12px;font-size:13px;margin-bottom:16px"></div>
+        <div id="prog-form-error" role="alert" class="mb-16 text-sm text-danger" style="display:none;background:#FEF2F2;border-radius:6px;padding:10px 12px"></div>
 
-        <div style="display:flex;gap:10px;justify-content:flex-end">
-          <button type="button" id="cancel-prog-btn" class="btn" style="background:#F3F4F6;color:#374151">Cancel</button>
+        <div class="d-flex gap-10 justify-end">
+          <button type="button" id="cancel-prog-btn" class="btn btn-muted">Cancel</button>
           <button type="submit" id="save-prog-btn" class="btn btn-orange">Save Program</button>
         </div>
       </form>
@@ -182,10 +177,10 @@ function programRow(p: LearningProgram): string {
     : '<span class="badge badge-gray">Inactive</span>';
   const method = esc(p.teachingMethod.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()));
   return `<tr data-id="${esc(p.id)}">
-    <td style="font-weight:600">${esc(p.name)}</td>
+    <td class="fw-700">${esc(p.name)}</td>
     <td>${subjectBadge}</td>
     <td style="text-transform:capitalize">${esc(p.level)}</td>
-    <td style="color:var(--muted);font-size:13px">${method}</td>
+    <td class="text-sm text-muted">${method}</td>
     <td>${esc(p.schoolIds.length)}</td>
     <td>${statusBadge}</td>
   </tr>`;

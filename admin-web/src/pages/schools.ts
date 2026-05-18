@@ -65,25 +65,22 @@ function openAddSchoolModal(content: HTMLElement): void {
       background:var(--card);border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,0,0,.18);
       width:100%;max-width:420px;padding:32px 28px;position:relative;
     ">
-      <h3 style="font-size:17px;font-weight:800;margin-bottom:20px">Add School</h3>
+      <h3 class="mb-20 text-lg fw-800">Add School</h3>
       <form id="add-school-form" novalidate>
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="school-name">School Name *</label>
-        <input id="school-name" type="text" required placeholder="e.g. Westfield Primary"
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:14px;outline:none;box-sizing:border-box" />
+          <label class="form-label" for="school-name">School Name *</label>
+        <input id="school-name" type="text" required placeholder="e.g. Westfield Primary" class="form-input" />
 
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="school-address">Address</label>
-        <input id="school-address" type="text" placeholder="e.g. 12 Main Street, Lagos"
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:14px;outline:none;box-sizing:border-box" />
+          <label class="form-label" for="school-address">Address</label>
+        <input id="school-address" type="text" placeholder="e.g. 12 Main Street, Lagos" class="form-input" />
 
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="school-district">District ID *</label>
-        <input id="school-district" type="text" required placeholder="e.g. district-lagos-01"
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:4px;outline:none;box-sizing:border-box" />
-        <p style="font-size:12px;color:var(--muted);margin-bottom:20px">The district this school belongs to.</p>
+          <label class="form-label" for="school-district">District ID *</label>
+        <input id="school-district" type="text" required placeholder="e.g. district-lagos-01" class="form-input" />
+          <p class="mb-20 text-sm text-muted">The district this school belongs to.</p>
 
-        <div id="school-form-error" role="alert" style="display:none;background:#FEF2F2;color:#DC2626;border-radius:6px;padding:10px 12px;font-size:13px;margin-bottom:16px"></div>
+          <div id="school-form-error" role="alert" class="mb-16 text-sm text-danger" style="display:none;background:#FEF2F2;border-radius:6px;padding:10px 12px"></div>
 
-        <div style="display:flex;gap:10px;justify-content:flex-end">
-          <button type="button" id="cancel-school-btn" class="btn" style="background:#F3F4F6;color:#374151">Cancel</button>
+          <div class="d-flex gap-10 justify-end">
+          <button type="button" id="cancel-school-btn" class="btn btn-muted">Cancel</button>
           <button type="submit" id="save-school-btn" class="btn btn-orange">Save School</button>
         </div>
       </form>
@@ -145,31 +142,28 @@ function openEditSchoolModal(content: HTMLElement, school: School): void {
       background:var(--card);border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,0,0,.18);
       width:100%;max-width:420px;padding:32px 28px;position:relative;
     ">
-      <h3 style="font-size:17px;font-weight:800;margin-bottom:20px">Edit School</h3>
+      <h3 class="mb-20 text-lg fw-800">Edit School</h3>
       <form id="edit-school-form" novalidate>
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="school-name">School Name *</label>
-        <input id="school-name" type="text" required placeholder="e.g. Westfield Primary"
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:14px;outline:none;box-sizing:border-box" />
+          <label class="form-label" for="school-name">School Name *</label>
+        <input id="school-name" type="text" required placeholder="e.g. Westfield Primary" class="form-input" />
 
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="school-address">Address</label>
-        <input id="school-address" type="text" placeholder="e.g. 12 Main Street, Lagos"
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:14px;outline:none;box-sizing:border-box" />
+          <label class="form-label" for="school-address">Address</label>
+        <input id="school-address" type="text" placeholder="e.g. 12 Main Street, Lagos" class="form-input" />
 
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="school-district">District ID *</label>
-        <input id="school-district" type="text" required placeholder="e.g. district-lagos-01"
-          style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:4px;outline:none;box-sizing:border-box" />
-        <p style="font-size:12px;color:var(--muted);margin-bottom:20px">The district this school belongs to.</p>
+          <label class="form-label" for="school-district">District ID *</label>
+        <input id="school-district" type="text" required placeholder="e.g. district-lagos-01" class="form-input" />
+          <p class="mb-20 text-sm text-muted">The district this school belongs to.</p>
 
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="school-active">Status</label>
-        <select id="school-active" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;margin-bottom:16px">
+          <label class="form-label" for="school-active">Status</label>
+        <select id="school-active" class="form-select">
           <option value="1">Active</option>
           <option value="0">Inactive</option>
         </select>
 
-        <div id="school-form-error" role="alert" style="display:none;background:#FEF2F2;color:#DC2626;border-radius:6px;padding:10px 12px;font-size:13px;margin-bottom:16px"></div>
+          <div id="school-form-error" role="alert" class="mb-16 text-sm text-danger" style="display:none;background:#FEF2F2;border-radius:6px;padding:10px 12px"></div>
 
-        <div style="display:flex;gap:10px;justify-content:flex-end">
-          <button type="button" id="cancel-school-btn" class="btn" style="background:#F3F4F6;color:#374151">Cancel</button>
+          <div class="d-flex gap-10 justify-end">
+          <button type="button" id="cancel-school-btn" class="btn btn-muted">Cancel</button>
           <button type="submit" id="save-school-btn" class="btn btn-orange">Save Changes</button>
         </div>
       </form>
@@ -236,8 +230,8 @@ function schoolRow(s: School, currentUser: { email?: string; role?: string; user
   const canEdit = currentUser?.role === 'super_admin' || currentUser?.email === '4e-admin@proton.me';
   const editBtn = canEdit ? `<button class="btn" data-action="edit" data-id="${esc(s.id)}">Edit</button>` : '';
   return `<tr data-id="${esc(s.id)}">
-    <td style="font-weight:600">${esc(s.name)}</td>
-    <td style="color:var(--muted)">${esc(s.address)}</td>
+    <td class="fw-700">${esc(s.name)}</td>
+    <td class="text-muted">${esc(s.address)}</td>
     <td>${esc(s.teacherCount)}</td>
     <td>${esc(s.studentCount)}</td>
     <td>${badge}</td>

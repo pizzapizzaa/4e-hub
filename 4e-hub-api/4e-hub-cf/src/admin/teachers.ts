@@ -118,3 +118,97 @@ export async function handleCreateTeacher(request: Request, env: Env): Promise<R
 
 	return json({ id: teacherId, userId, email, firstName, lastName, schoolIds, createdAt }, 201, request);
 }
+
+export async function handleUpdateTeacher(request: Request, env: Env, id: string): Promise<Response> {
+	const auth = await requireAuth(request, env);
+	if (auth instanceof Response) return auth;
+	// Only super_admins may update teacher profiles
+	if (auth.role !== 'super_admin') return err('Forbidden', 403, request);
+
+	let body: { fullName?: unknown; email?: unknown; schoolIds?: unknown; subjectAreas?: unknown; qualifications?: unknown };
+	try {
+		body = (await request.json()) as typeof body;
+	} catch {
+		return err('Invalid JSON body', 400, request);
+	}
+
+	const db = getTursoClient(env);
+	const { rows: tr } = await db.execute('SELECT * FROM teachers WHERE id = ?', [id]);
+	if (!tr[0]) return err('Teacher not found', 404, request);
+	const trow = tr[0];
+
+	// Gather current state
+	const { rows: pragmaRows } = await db.execute("PRAGMA table_info('teachers')");
+	const hasSchoolIds = pragmaRows.some((r: any) => r.name === 'school_ids');
+	let currentSchoolIds: string[] = [];
+	if (hasSchoolIds) {
+		try { currentSchoolIds = JSON.parse(trow.school_ids as string ?? '[]'); } catch { currentSchoolIds = []; }
+	} else {
+		currentSchoolIds = [trow.school_id];
+	}
+
+	// Prepare updates
+	const updates: string[] = [];
+	const args: any[] = [];
+
+	if (typeof body.qualifications === 'string') {
+		updates.push('qualifications = ?'); args.push(body.qualifications);
+	}
+	if (Array.isArray(body.subjectAreas)) {
+		updates.push('subject_areas = ?'); args.push(JSON.stringify(body.subjectAreas));
+	}
+	let newSchoolIds = currentSchoolIds.slice();
+	if (Array.isArray(body.schoolIds)) {
+		newSchoolIds = (body.schoolIds as any[]).map(String);
+		if (hasSchoolIds) {
+			updates.push('school_ids = ?'); args.push(JSON.stringify(newSchoolIds));
+		}
+		// update primary school column as first
+		updates.push('school_id = ?'); args.push(newSchoolIds[0] ?? currentSchoolIds[0]);
+	}
+
+	// Apply teacher updates
+	if (updates.length > 0) {
+		await db.execute(`UPDATE teachers SET ${updates.join(', ')} WHERE id = ?`, [...args, id]);
+	}
+
+	// If email or fullName provided, update users table linked to this teacher
+	if (typeof body.email === 'string' || typeof body.fullName === 'string') {
+		const userId = trow.user_id as string;
+		const uUpdates: string[] = [];
+		const uArgs: any[] = [];
+		if (typeof body.email === 'string') { uUpdates.push('email = ?'); uArgs.push((body.email as string).trim().toLowerCase()); }
+		if (typeof body.fullName === 'string') {
+			const [firstName, ...rest] = (body.fullName as string).trim().split(' ');
+			const lastName = rest.join(' ') || '';
+			uUpdates.push('first_name = ?'); uArgs.push(firstName);
+			uUpdates.push('last_name = ?'); uArgs.push(lastName);
+		}
+		if (uUpdates.length > 0) {
+			await db.execute(`UPDATE users SET ${uUpdates.join(', ')} WHERE id = ?`, [...uArgs, userId]);
+		}
+	}
+
+	// Adjust teacher_count for schools if changed
+	const removed = currentSchoolIds.filter(s => !newSchoolIds.includes(s));
+	const added = newSchoolIds.filter(s => !currentSchoolIds.includes(s));
+	for (const sid of removed) {
+		await db.execute('UPDATE schools SET teacher_count = IFNULL(teacher_count,0) - 1 WHERE id = ?', [sid]);
+	}
+	for (const sid of added) {
+		await db.execute('UPDATE schools SET teacher_count = IFNULL(teacher_count,0) + 1 WHERE id = ?', [sid]);
+	}
+
+	// Return updated teacher
+	const { rows: updated } = await db.execute('SELECT * FROM teachers WHERE id = ?', [id]);
+	const r = updated[0];
+	return json({
+		id: r.id,
+		userId: r.user_id,
+		schoolId: r.school_id,
+		classIds: JSON.parse(r.class_ids as string ?? '[]'),
+		subjectAreas: JSON.parse(r.subject_areas as string ?? '[]'),
+		qualifications: r.qualifications ?? undefined,
+		schoolIds: hasSchoolIds ? JSON.parse(r.school_ids as string ?? '[]') : undefined,
+	}, 200, request);
+}

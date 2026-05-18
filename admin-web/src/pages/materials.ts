@@ -10,8 +10,8 @@ export async function renderMaterials(): Promise<void> {
     <div class="list-header">
       <h2>Materials Config</h2>
     </div>
-    <div id="mat-body" style="display:flex;flex-direction:column;gap:12px">
-      <div class="card" style="padding:20px;color:var(--muted);text-align:center">Loading…</div>
+    <div id="mat-body" class="d-flex flex-col gap-12">
+      <div class="card p-20 text-muted text-center">Loading…</div>
     </div>`;
 
   const [schools] = await Promise.all([getSchools()]);
@@ -23,21 +23,21 @@ export async function renderMaterials(): Promise<void> {
         <h2>My Materials</h2>
         <button class="btn btn-orange" id="add-material-btn">+ Add Material</button>
       </div>
-      <div id="teacher-mat-list" style="margin-top:12px"></div>`;
+      <div id="teacher-mat-list" class="mt-12"></div>`;
 
     const listDiv = document.getElementById('teacher-mat-list')!;
     async function loadTeacherMaterials() {
-      listDiv.innerHTML = '<div class="card" style="padding:20px;color:var(--muted);text-align:center">Loading…</div>';
+      listDiv.innerHTML = '<div class="card p-20 text-muted text-center">Loading…</div>';
       const mats = await getTeacherMaterials();
       if (mats.length === 0) { listDiv.innerHTML = '<div class="empty">No materials yet.</div>'; return; }
       listDiv.innerHTML = mats.map((m: any) => `
-        <div class="card" style="padding:12px;margin-bottom:8px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="card p-12 mb-8">
+          <div class="d-flex" style="justify-content:space-between;align-items:center">
             <div>
-              <div style="font-weight:600">${esc(m.title)}</div>
-              <div style="font-size:13px;color:var(--muted)">${esc(m.url)}</div>
+              <div class="fw-700">${esc(m.title)}</div>
+              <div class="text-sm text-muted">${esc(m.url)}</div>
             </div>
-            <div style="font-size:12px;color:var(--muted)">${new Date(m.createdAt).toLocaleString()}</div>
+            <div class="text-xs text-muted">${new Date(m.createdAt).toLocaleString()}</div>
           </div>
         </div>`).join('');
     }
@@ -55,9 +55,9 @@ export async function renderMaterials(): Promise<void> {
   // School selector + config panel
   const body = document.getElementById('mat-body')!;
   body.innerHTML = `
-    <div class="card" style="padding:20px;display:flex;align-items:center;gap:12px">
-      <label style="font-weight:600;white-space:nowrap">School</label>
-      <select id="school-select" style="flex:1;padding:8px 10px;border:1px solid #E2E8F0;border-radius:6px;font-size:14px">
+    <div class="card p-20 d-flex items-center gap-12">
+      <label class="form-label" style="white-space:nowrap">School</label>
+      <select id="school-select" class="form-select" style="flex:1">
         ${schools.map(s => `<option value="${esc(s.id)}">${esc(s.name)}</option>`).join('')}
       </select>
     </div>
@@ -65,7 +65,7 @@ export async function renderMaterials(): Promise<void> {
 
   async function loadConfig(schoolId: string): Promise<void> {
     const panel = document.getElementById('mat-config')!;
-    panel.innerHTML = `<div class="card" style="padding:20px;color:var(--muted);text-align:center">Loading config…</div>`;
+    panel.innerHTML = `<div class="card p-20 text-muted text-center">Loading config…</div>`;
     const cfg = await getMaterialsConfig(schoolId);
     panel.innerHTML = configHtml(schoolId, cfg);
     bindSave(schoolId, cfg);
@@ -80,7 +80,7 @@ export async function renderMaterials(): Promise<void> {
 
 function configHtml(schoolId: string, cfg: MaterialsConfig): string {
   return `
-    <form id="mat-form" data-school="${schoolId}" style="display:flex;flex-direction:column;gap:12px">
+    <form id="mat-form" data-school="${schoolId}" class="d-flex flex-col gap-12">
 
       ${providerCard({
         id:      'khan',
@@ -115,7 +115,7 @@ function configHtml(schoolId: string, cfg: MaterialsConfig): string {
         idLabel: 'Playlist IDs',
       })}
 
-      <div style="display:flex;justify-content:flex-end">
+      <div class="d-flex justify-end">
         <button type="submit" class="btn btn-green" id="mat-save-btn">
           <i class="ph ph-floppy-disk"></i>&nbsp; Save Changes
         </button>
@@ -136,24 +136,20 @@ interface ProviderCardOpts {
 
 function providerCard(o: ProviderCardOpts): string {
   return `
-    <div class="card" style="padding:20px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-        <span style="font-size:24px;color:${o.color}"><i class="ph ${o.icon}"></i></span>
-        <span style="font-size:16px;font-weight:600">${o.label}</span>
-        <label style="margin-left:auto;display:flex;align-items:center;gap:6px;font-size:14px;cursor:pointer">
+    <div class="card p-20">
+      <div class="d-flex items-center gap-10 mb-14">
+        <span class="text-lg" style="color:${o.color}"><i class="ph ${o.icon}"></i></span>
+        <span class="text-md fw-700">${o.label}</span>
+        <label class="ml-auto d-flex items-center gap-6 text-sm" style="cursor:pointer">
           <input type="checkbox" id="${o.id}-enabled" ${o.enabled ? 'checked' : ''}
             style="width:16px;height:16px;accent-color:${o.color}">
           Enabled
         </label>
       </div>
-      <label style="font-size:13px;font-weight:600;color:var(--muted);display:block;margin-bottom:6px">
-        ${o.idLabel} <span style="font-weight:400">(one per line)</span>
+      <label class="form-label">
+        ${o.idLabel} <span>(one per line)</span>
       </label>
-      <textarea id="${o.id}-ids"
-        style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #E2E8F0;border-radius:6px;
-               font-family:monospace;font-size:13px;resize:vertical;min-height:72px"
-        placeholder="${o.placeholder}"
-      >${o.ids.join('\n')}</textarea>
+      <textarea id="${o.id}-ids" class="form-input font-mono" style="min-height:72px" placeholder="${o.placeholder}">${o.ids.join('\n')}</textarea>
     </div>`;
 }
 
@@ -199,14 +195,14 @@ function openAddMaterialModal(): void {
   modal.id = 'add-material-modal';
   modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:900;display:flex;align-items:center;justify-content:center;padding:20px;`;
   modal.innerHTML = `
-    <div style="background:var(--card);border-radius:var(--radius);box-shadow:0 8px 32px rgba(0,0,0,.18);width:100%;max-width:520px;padding:24px">
-      <h3 style="font-size:17px;font-weight:800;margin-bottom:12px">Add Material</h3>
+    <div class="card p-24" style="width:100%;max-width:520px">
+      <h3 class="mb-12">Add Material</h3>
       <form id="add-material-form">
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Title</label>
-        <input id="mat-title" style="width:100%;padding:8px;margin-bottom:10px" />
-        <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">PDF URL or public link</label>
-        <input id="mat-url" style="width:100%;padding:8px;margin-bottom:10px" />
-        <div style="display:flex;justify-content:flex-end;gap:8px"><button type="button" id="mat-cancel" class="btn">Cancel</button><button type="submit" class="btn btn-orange">Add</button></div>
+        <label class="form-label">Title</label>
+        <input id="mat-title" class="form-input" />
+        <label class="form-label">PDF URL or public link</label>
+        <input id="mat-url" class="form-input" />
+        <div class="d-flex justify-end gap-8"><button type="button" id="mat-cancel" class="btn btn-muted">Cancel</button><button type="submit" class="btn btn-orange">Add</button></div>
       </form>
     </div>`;
   document.body.appendChild(modal);
@@ -223,16 +219,16 @@ function openAddMaterialModal(): void {
       modal.remove();
       // refresh materials list
       const listDiv = document.getElementById('teacher-mat-list')!;
-      listDiv.innerHTML = '<div class="card" style="padding:20px;color:var(--muted);text-align:center">Loading…</div>';
+      listDiv.innerHTML = '<div class="card p-20 text-muted text-center">Loading…</div>';
       const mats = await getTeacherMaterials();
       listDiv.innerHTML = mats.length === 0 ? '<div class="empty">No materials yet.</div>' : mats.map((m: any) => `
-        <div class="card" style="padding:12px;margin-bottom:8px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="card p-12 mb-8">
+          <div class="d-flex" style="justify-content:space-between;align-items:center">
             <div>
-              <div style="font-weight:600">${esc(m.title)}</div>
-              <div style="font-size:13px;color:var(--muted)">${esc(m.url)}</div>
+              <div class="fw-700">${esc(m.title)}</div>
+              <div class="text-sm text-muted">${esc(m.url)}</div>
             </div>
-            <div style="font-size:12px;color:var(--muted)">${new Date(m.createdAt).toLocaleString()}</div>
+            <div class="text-xs text-muted">${new Date(m.createdAt).toLocaleString()}</div>
           </div>
         </div>`).join('');
     } catch (err) {

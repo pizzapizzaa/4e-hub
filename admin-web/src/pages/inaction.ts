@@ -9,11 +9,11 @@ export async function renderInaction(): Promise<void> {
   content.innerHTML = `
     <div class="list-header">
       <h2>Teacher — In-Action (Web)</h2>
-      <p style="color:var(--muted);margin-top:6px">Light scaffold of teacher tools: class roster, broadcast, memoir.</p>
+      <p class="mt-6 text-muted">Light scaffold of teacher tools: class roster, broadcast, memoir.</p>
     </div>
     ${teachers.length === 0
       ? '<div class="empty">No teachers found.</div>'
-      : `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+      : `<div class="d-grid gap-12" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr));">
           ${teachers.map(t => teacherCard(t)).join('')}
         </div>`
     }
@@ -33,17 +33,17 @@ export async function renderInaction(): Promise<void> {
 }
 
 function teacherCard(t: Teacher): string {
-  return `<div class="card" style="padding:12px">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-      <div style="width:44px;height:44px;border-radius:8px;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:700">
+  return `<div class="card p-12">
+    <div class="d-flex items-center gap-12 mb-8">
+      <div class="fw-700" style="width:44px;height:44px;border-radius:8px;background:var(--yellow);display:flex;align-items:center;justify-content:center">
         ${esc(t.id.slice(8,12))}
       </div>
       <div>
-        <div style="font-weight:700">Teacher ${esc(t.id.slice(8,12))}</div>
-        <div style="color:var(--muted);font-size:13px">${esc(t.schoolId)}</div>
+        <div class="fw-700">Teacher ${esc(t.id.slice(8,12))}</div>
+        <div class="text-sm text-muted">${esc(t.schoolId)}</div>
       </div>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <div class="d-flex gap-8 flex-wrap">
       <button class="btn inaction-btn" data-teacher="${esc(t.id)}" data-action="roster">Class roster</button>
       <button class="btn inaction-btn" data-teacher="${esc(t.id)}" data-action="broadcast">Broadcast</button>
       <button class="btn inaction-btn" data-teacher="${esc(t.id)}" data-action="memoir">Memoir</button>
@@ -57,20 +57,20 @@ async function showRoster(root: HTMLElement, teacherId: string): Promise<void> {
   const classes = await getTeacherClasses(teacherId);
 
   root.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between">
+    <div class="d-flex items-center justify-between">
       <h2>Class roster — ${esc(teacher.id)}</h2>
       <div>
         <button id="back-btn" class="btn">Back</button>
-        <button id="export-csv" class="btn" style="margin-left:8px">Export CSV</button>
+        <button id="export-csv" class="btn ml-8">Export CSV</button>
       </div>
     </div>
-    <div style="margin-top:12px">
+    <div class="mt-12">
       <label for="class-select">Select class</label>
-      <select id="class-select" style="margin-left:8px">
+      <select id="class-select" class="ml-8">
         ${classes.map((c:any) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join('')}
       </select>
     </div>
-    <div id="roster-area" style="margin-top:12px"></div>
+    <div id="roster-area" class="mt-12"></div>
   `;
 
   document.getElementById('back-btn')!.addEventListener('click', async () => renderInaction());
@@ -88,7 +88,7 @@ async function showRoster(root: HTMLElement, teacherId: string): Promise<void> {
               ${students.map(s => `<tr data-id="${esc(s.id)}"><td><input type="checkbox" class="att-checkbox" data-student="${esc(s.id)}" checked></td><td>${esc(s.id)}</td><td>${esc(s.classIds.join(', '))}</td></tr>`).join('')}
             </tbody>
           </table>
-          <div style="margin-top:8px"><button id="save-att" class="btn btn-orange">Save attendance</button></div>
+          <div class="mt-8"><button id="save-att" class="btn btn-orange">Save attendance</button></div>
         </div>`;
 
     document.getElementById('save-att')!.addEventListener('click', () => {
@@ -116,23 +116,23 @@ async function showRoster(root: HTMLElement, teacherId: string): Promise<void> {
 
 function showBroadcast(root: HTMLElement, teacherId: string): void {
   root.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between">
+    <div class="d-flex items-center justify-between">
       <h2>Broadcast — ${esc(teacherId)}</h2>
       <button id="back-btn" class="btn">Back</button>
     </div>
-    <div style="margin-top:12px">
-      <p style="color:var(--muted)">Start a broadcast session to one of your classes.</p>
-      <div style="margin-top:8px">
+    <div class="mt-12">
+      <p class="text-muted">Start a broadcast session to one of your classes.</p>
+      <div class="mt-8">
         <label for="bc-class">Class</label>
-        <select id="bc-class" style="margin-left:8px"></select>
+        <select id="bc-class" class="ml-8"></select>
       </div>
-      <label style="display:block;margin-top:8px">Message</label>
-      <textarea id="bc-message" style="width:100%;height:90px;padding:8px;border:1px solid var(--border);border-radius:8px"></textarea>
-      <div style="margin-top:10px">
+      <label style="display:block" class="mt-8">Message</label>
+      <textarea id="bc-message" class="form-input" style="height:90px"></textarea>
+      <div class="mt-10">
         <button id="bc-start" class="btn btn-orange">Start broadcast</button>
       </div>
-      <div id="bc-result" style="margin-top:12px"></div>
-      <h3 style="margin-top:16px">Recent sessions</h3>
+      <div id="bc-result" class="mt-12"></div>
+      <h3 class="mt-16">Recent sessions</h3>
       <div id="bc-sessions"></div>
     </div>
   `;
@@ -165,16 +165,16 @@ function showBroadcast(root: HTMLElement, teacherId: string): void {
 
 function showMemoir(root: HTMLElement, teacherId: string): void {
   root.innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between">
+    <div class="d-flex items-center justify-between">
       <h2>Memoir — ${esc(teacherId)}</h2>
       <button id="back-btn" class="btn">Back</button>
     </div>
-    <div style="margin-top:12px">
-      <div style="display:flex;gap:8px;align-items:flex-start">
-        <div style="flex:1">
+    <div class="mt-12">
+      <div class="d-flex gap-8">
+        <div class="flex-1">
           <label>New entry</label>
-          <textarea id="memoir-note" style="width:100%;height:90px;padding:8px;border:1px solid var(--border);border-radius:8px"></textarea>
-          <div style="margin-top:8px"><button id="memoir-add" class="btn btn-orange">Add entry</button></div>
+          <textarea id="memoir-note" class="form-input" style="height:90px"></textarea>
+          <div class="mt-8"><button id="memoir-add" class="btn btn-orange">Add entry</button></div>
         </div>
         <div style="width:360px">
           <h4>Recent entries</h4>
@@ -188,7 +188,7 @@ function showMemoir(root: HTMLElement, teacherId: string): void {
   async function refresh() {
     const list = document.getElementById('memoir-list')!;
     const entries = await getMemoirs(teacherId);
-    list.innerHTML = entries.length === 0 ? '<div class="empty">No entries</div>' : `<ul>${entries.map((e:any)=>`<li><strong>${esc(e.studentId ?? '—')}</strong>: ${esc(e.note)} <div style="color:var(--muted);font-size:12px">${esc(e.createdAt)}</div></li>`).join('')}</ul>`;
+    list.innerHTML = entries.length === 0 ? '<div class="empty">No entries</div>' : `<ul>${entries.map((e:any)=>`<li><strong>${esc(e.studentId ?? '—')}</strong>: ${esc(e.note)} <div class="text-xs text-muted">${esc(e.createdAt)}</div></li>`).join('')}</ul>`;
   }
 
   document.getElementById('memoir-add')!.addEventListener('click', async () => {
