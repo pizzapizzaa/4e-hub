@@ -10,6 +10,7 @@
   ]
   ,
   "routes": [
+    { "src": "^/api/(.*)", "dest": "https://4e-hub-cf.workers.dev/api/$1" },
     { "src": "/assets/(.*)", "dest": "/admin-web/assets/$1" },
     { "src": "^/$", "dest": "/admin-web/index.html" },
     { "handle": "filesystem" },
