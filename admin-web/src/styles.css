@@ -172,7 +172,6 @@ body {
   -webkit-tap-highlight-color: rgba(0,0,0,0);
   position: relative;
   display: inline-block;
-  text-shadow: 0 1px 0 rgba(0,0,0,0.6);
 }
 .btn:hover { opacity: .95; }
 .btn-green { background: var(--green); color: #fff; }
