@@ -29,7 +29,7 @@ export async function renderDashboard(): Promise<void> {
         <div class="stat-icon" style="color:#FACC15"><i class="ph ph-chalkboard-teacher"></i></div>
         <div class="stat-value" style="color:#FACC15">${teachers.length}</div>
         <div class="stat-label">Teachers</div>
-        <button id="dashboard-create-teacher" class="btn" style="margin-top:8px;background:#2563EB;color:#FFFFFF;border:none">Create</button>
+        <button id="dashboard-create-teacher" class="btn btn-primary" style="margin-top:8px">Create</button>
       </div>
       <div class="stat-card" style="border-top-color:#F97316">
         <div class="stat-icon" style="color:#F97316"><i class="ph ph-graduation-cap"></i></div>

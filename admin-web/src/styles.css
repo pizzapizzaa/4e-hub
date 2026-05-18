@@ -175,6 +175,8 @@ body {
 }
 .btn:hover { opacity: .95; }
 .btn-green { background: var(--green); color: #fff; }
+/* Primary blue button */
+.btn-primary { background: #2563EB; color: #FFFFFF; }
 
 /* Primary / orange 3D button (face + layered bottom shadows + press animation) */
 .btn-orange {
